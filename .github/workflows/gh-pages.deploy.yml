@@ -26,10 +26,13 @@ jobs:
           deploy-branch: gh-pages
           gatsby-args: --prefix-paths
           working-dir: web
-      - name: Sleep for 60 seconds
+      - name: Create folder
+        run: |
+          mkdir -p out
+      - name: Sleep for 2 mins
         uses: jakejarvis/wait-action@master
         with:
-          time: "60s"
+          time: "120s"
       - name: resume to pdf
         uses: misaelnieto/web_to_pdf_action@master
         with:
