@@ -1,0 +1,13 @@
+
+.designation {
+  color: #4679bd;
+  font-weight: 500;
+}
+.organization {
+  font-weight: 500;
+}
+.professionalItem+.professionalItem {
+  padding-top: 15px;
+  border-top: 1px solid #f3f3f3;
+  margin-top: 15px;
+}

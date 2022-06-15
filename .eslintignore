@@ -1,0 +1,12 @@
+node_modules
+__generated__
+public
+
+/web/public
+/web/node_modules
+/web/public
+/web/.cache
+
+/studio/build
+/studio/node_modules
+/studio/public

@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+    - dev
+  repository_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      NEXT_PUBLIC_BASE_PATH: /resume
+      NEXT_PUBLIC_CMS_INTEGRATION: ${{ secrets.NEXT_PUBLIC_CMS_INTEGRATION }}
+      CMS_ENDPOINT: ${{ secrets.CMS_ENDPOINT }}
+      CMS_KEY: ${{ secrets.CMS_KEY }}
+
+    steps:
+      - name: Get files
+        uses: actions/checkout@v1
+        uses: enriikke/gatsby-gh-pages-action@v2
+        with:
+          access-token: ${{ secrets.ACCESS_TOKEN }}
+          deploy-branch: gh-pages
+          gatsby-args: --prefix-paths
+          working-dir: web
+      - name: Sleep for 60 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: "60s"
+      - name: resume to pdf
+        uses: misaelnieto/web_to_pdf_action@master
+        with:
+          webPageURL: https://xenotime-india.github.io/resume/pdf
+          outputFile: ./out/CV_SANDEEP_KUMAR.pdf
+          usePuppeteer: true
+          pdfOptions: '{"displayHeaderFooter":false,"format":"letter","landscape":false,"margin":{"bottom":0,"left":0,"right":0,"top":0},"preferCSSPageSize":false,"printBackground":true,"scale":1}'
+      - name: Deploy pdf
+        uses: JamesIves/github-pages-deploy-action@4.1.1
+        with:
+          branch: gh-pages
+          folder: out

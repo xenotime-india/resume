@@ -1,0 +1,17 @@
+@use "./variables.scss";
+
+.header {
+  padding: variables.$spacer-sm 0;
+  background-color: variables.$primary;
+}
+.headerPdf {
+  padding: 10px 0px 30px 0;
+}
+.userName {
+  font-size: 39px;
+  text-transform: capitalize;
+}
+.subHeading {
+  margin-bottom: 0;
+  font-size: 17px;
+}
