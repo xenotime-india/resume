@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-    - main
+      - main
   repository_dispatch:
 
 jobs:
@@ -19,6 +19,7 @@ jobs:
     steps:
       - name: Get files
         uses: actions/checkout@v1
+      - name: Creating Build
         uses: enriikke/gatsby-gh-pages-action@v2
         with:
           access-token: ${{ secrets.ACCESS_TOKEN }}
