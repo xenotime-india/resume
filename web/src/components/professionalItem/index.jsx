@@ -5,7 +5,6 @@ import classNames from "classnames";
 import PortableText from "../portableText";
 
 export const ProfessionalItem = (props) => {
-  console.log(props);
   const {
     organization,
     isCurrent,

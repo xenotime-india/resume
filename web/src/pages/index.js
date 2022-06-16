@@ -21,6 +21,27 @@ import { mapEdgesToNodes } from "../lib/helpers";
 import SEO from "./../components/seo";
 
 export const query = graphql`
+  fragment SanityImage on SanityMainImage {
+    crop {
+      _key
+      _type
+      top
+      bottom
+      left
+      right
+    }
+    hotspot {
+      _key
+      _type
+      x
+      y
+      height
+      width
+    }
+    asset {
+      _id
+    }
+  }
   query resumeQuery {
     personalInformation: sanityPersonalInformation(
       _id: { regex: "/(drafts.|)personalInformation/" }
@@ -34,7 +55,7 @@ export const query = graphql`
       email
       twitterUserName
       image {
-        ...ImageWithPreview
+        ...SanityImage
       }
       links {
         link {
@@ -100,7 +121,6 @@ export const query = graphql`
 
 // markup
 const IndexPage = ({ data }) => {
-  console.log(data);
   const { personalInformation } = data;
   const educations = (data || {}).educations
     ? mapEdgesToNodes(data.educations)

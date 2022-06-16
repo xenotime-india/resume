@@ -6,6 +6,11 @@ export default {
   icon: GiSkills,
   fields: [
     {
+      name: "sequence",
+      type: "number",
+      title: "Sequence",
+    },
+    {
       name: "levelName",
       type: "string",
       title: "Level Name",

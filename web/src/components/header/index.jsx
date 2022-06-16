@@ -2,7 +2,8 @@ import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
-import SanityImage from "gatsby-plugin-sanity-image";
+import { imageUrlFor } from "../../lib/image-url";
+import { buildImageObj } from "../../lib/helpers";
 
 export const Header = (props) => {
   const { pdf = false, subtitle, title, profilePic = {} } = props;
@@ -19,13 +20,14 @@ export const Header = (props) => {
         >
           {!pdf && (
             <div className="col-md-2">
-              <SanityImage
-                {...profilePic}
-                height={300}
-                style={{ height: "100%", width: "100%", objectFit: "cover" }}
-                className="img-thumbnail rounded-circle"
-                loading="eager"
+              <img
+                src={imageUrlFor(buildImageObj(profilePic))
+                  .width(180)
+                  .height(180)
+                  .auto("format")
+                  .url()}
                 alt="user-pic"
+                className="img-thumbnail rounded-circle"
               />
             </div>
           )}

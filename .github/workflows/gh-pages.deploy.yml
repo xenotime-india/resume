@@ -34,7 +34,7 @@ jobs:
         uses: jakejarvis/wait-action@master
         with:
           time: "120s"
-      - name: Get files
+      - name: Get gh-pages files
         uses: actions/checkout@v3
         with:
           ref: gh-pages

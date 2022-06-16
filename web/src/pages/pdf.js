@@ -4,7 +4,8 @@ import {
   faBriefcase,
   faGraduationCap,
 } from "@fortawesome/free-solid-svg-icons";
-import SanityImage from "gatsby-plugin-sanity-image";
+import { imageUrlFor } from "../lib/image-url";
+import { buildImageObj } from "../lib/helpers";
 
 import {
   Header,
@@ -36,7 +37,7 @@ export const query = graphql`
       email
       twitterUserName
       image {
-        ...ImageWithPreview
+        ...SanityImage
       }
       links {
         link {
@@ -49,7 +50,9 @@ export const query = graphql`
         _key
       }
     }
-    professionalExperiences: allSanityProfessionalExperience {
+    professionalExperiences: allSanityProfessionalExperience(
+      sort: { fields: [startDate], order: DESC }
+    ) {
       edges {
         node {
           id
@@ -62,7 +65,9 @@ export const query = graphql`
         }
       }
     }
-    certifications: allSanityCertification {
+    certifications: allSanityCertification(
+      sort: { fields: [sequence], order: ASC }
+    ) {
       edges {
         node {
           id
@@ -72,7 +77,7 @@ export const query = graphql`
         }
       }
     }
-    educations: allSanityEducation {
+    educations: allSanityEducation(sort: { fields: [sequence], order: ASC }) {
       edges {
         node {
           id
@@ -84,7 +89,7 @@ export const query = graphql`
         }
       }
     }
-    skills: allSanitySkill {
+    skills: allSanitySkill(sort: { fields: [sequence], order: ASC }) {
       edges {
         node {
           level
@@ -102,7 +107,6 @@ export const query = graphql`
 
 // markup
 const PDFPage = ({ data }) => {
-  console.log(data);
   const { personalInformation } = data;
   const educations = (data || {}).educations
     ? mapEdgesToNodes(data.educations)
@@ -129,13 +133,14 @@ const PDFPage = ({ data }) => {
         <div className="pdfSidebar">
           <Section color="light" pdf>
             <div className="text-center">
-              <SanityImage
-                {...personalInformation.image}
-                height={300}
-                style={{ height: "100%", width: "100%", objectFit: "cover" }}
-                className="img-thumbnail rounded-circle"
-                loading="eager"
+              <img
+                src={imageUrlFor(buildImageObj(personalInformation.image))
+                  .width(180)
+                  .height(180)
+                  .auto("format")
+                  .url()}
                 alt="user-pic"
+                className="img-thumbnail rounded-circle"
               />
             </div>
             <div className="mt-xs" />
