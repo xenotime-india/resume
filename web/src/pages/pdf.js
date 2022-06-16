@@ -146,7 +146,7 @@ const PDFPage = ({ data }) => {
             <div className="mt-xs" />
             <ContactInformation personalInformation={personalInformation} pdf />
             <Skills skills={skills} pdf />
-            <div style={{ height: 250 }} />
+            <div style={{ height: 290 }} />
             <Certifications certifications={certifications} pdf />
           </Section>
         </div>
