@@ -5,6 +5,7 @@ on:
     branches:
       - main
   repository_dispatch:
+    types: production_build
 
 jobs:
   build:
@@ -18,7 +19,7 @@ jobs:
 
     steps:
       - name: Get files
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
       - name: Creating Build
         uses: enriikke/gatsby-gh-pages-action@v2
         with:
@@ -26,13 +27,18 @@ jobs:
           deploy-branch: gh-pages
           gatsby-args: --prefix-paths
           working-dir: web
-      - name: Create folder
+      - name: Create out folder
         run: |
           mkdir -p out
       - name: Sleep for 2 mins
         uses: jakejarvis/wait-action@master
         with:
           time: "120s"
+      - name: Get files
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: out
       - name: resume to pdf
         uses: misaelnieto/web_to_pdf_action@master
         with:
@@ -41,7 +47,7 @@ jobs:
           usePuppeteer: true
           pdfOptions: '{"displayHeaderFooter":false,"format":"letter","landscape":false,"margin":{"bottom":0,"left":0,"right":0,"top":0},"preferCSSPageSize":false,"printBackground":true,"scale":1}'
       - name: Deploy pdf
-        uses: JamesIves/github-pages-deploy-action@4.1.1
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages
           folder: out
