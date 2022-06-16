@@ -63,11 +63,11 @@ export const Footer = (props) => {
             and deployed on{" "}
             <a
               className="footerLink"
-              href="https://vercel.com/"
+              href="https://pages.github.com/"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Vercel
+              Github Pages
             </a>
             .
           </small>
