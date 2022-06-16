@@ -1,5 +1,4 @@
-import { faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FaFilePdf } from "react-icons/fa";
 import classnames from "classnames";
 import React from "react";
 import { imageUrlFor } from "../../lib/image-url";
@@ -46,7 +45,10 @@ export const Header = (props) => {
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <FontAwesomeIcon className="me-xxxs" icon={faFilePdf} />
+                <FaFilePdf
+                  className="me-xxxs"
+                  style={{ marginBottom: "5px" }}
+                />
                 Download as PDF
               </a>
             </div>

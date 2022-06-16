@@ -1,9 +1,10 @@
-import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import classNames from "classnames";
+import { FaRegCalendarAlt } from "react-icons/fa";
+
 import PortableText from "../portableText";
 import { formatDate } from "../../lib/helpers";
+
 export const ProfessionalItem = (props) => {
   const {
     organization,
@@ -30,7 +31,7 @@ export const ProfessionalItem = (props) => {
         <span>{organization}</span>
       </h6>
       <div>
-        <FontAwesomeIcon className="me-xxxs" icon={faCalendar} />
+        <FaRegCalendarAlt className="me-xxxs" style={{ marginBottom: "4px" }} />
         {formatDate(new Date(startDate))} –{" "}
         {isCurrent ? "Current" : endDate ? formatDate(new Date(endDate)) : null}
       </div>

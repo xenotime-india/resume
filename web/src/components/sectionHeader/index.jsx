@@ -1,22 +1,21 @@
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import classNames from "classnames";
+import { FaCircle } from "react-icons/fa";
 
 export const SectionHeader = (props) => {
-  const { icon, text, dark = false } = props;
+  const { icon: FaIcon, text, dark = false } = props;
 
   return (
     <h3 className="heading">
-      {icon && (
+      {FaIcon && (
         <span
-          className={classNames("fa-layers fa-fw", {
+          className={classNames("fa-stack small", {
             headingIconDark: dark,
             headingIcon: !dark,
           })}
         >
-          <FontAwesomeIcon icon={faCircle} color="#4679bd" />
-          <FontAwesomeIcon color="white" icon={icon} transform="shrink-8" />
+          <FaCircle color="#4679bd" className="fa-stack-2x" size={32} />
+          <FaIcon color="#ffffff" size={20} className="fa-stack-1x" />
         </span>
       )}
       <span

@@ -1,7 +1,6 @@
-import { faUniversity } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import PortableText from "../portableText";
+import { FaUniversity } from "react-icons/fa";
 
 export const EducationItem = (props) => {
   const {
@@ -17,7 +16,7 @@ export const EducationItem = (props) => {
     <article className={pdf ? "mt-xxs" : "mt-xs"}>
       <h4 className="d-inline-block">{title}</h4>
       <div>
-        <FontAwesomeIcon className="me-xxxs" icon={faUniversity} />
+        <FaUniversity className="me-xxxs" style={{ marginBottom: "5px" }} />
         {organization}
       </div>
       <div className={pdf ? "mt-xxxs" : "mt-xxs"}>

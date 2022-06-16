@@ -1,9 +1,6 @@
 import * as React from "react";
 import { graphql } from "gatsby";
-import {
-  faBriefcase,
-  faGraduationCap,
-} from "@fortawesome/free-solid-svg-icons";
+import { FaBriefcase, FaGraduationCap } from "react-icons/fa";
 import { imageUrlFor } from "../lib/image-url";
 import { buildImageObj } from "../lib/helpers";
 
@@ -161,14 +158,14 @@ const PDFPage = ({ data }) => {
             <AboutMe personalInformation={personalInformation} pdf />
           </Section>
           <Section color="white" pdf>
-            <SectionHeader icon={faBriefcase} text="Professional Experience" />
+            <SectionHeader icon={FaBriefcase} text="Professional Experience" />
             {professionalExperiences.map((experience) => (
               <ProfessionalItem {...experience} key={experience.id} pdf />
             ))}
 
             <div className="mt-xs" />
 
-            <SectionHeader icon={faGraduationCap} text="Education" />
+            <SectionHeader icon={FaGraduationCap} text="Education" />
             {educations.map((experience) => (
               <EducationItem key={experience.id} {...experience} pdf />
             ))}

@@ -1,6 +1,6 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import classnames from "classnames";
 import React from "react";
+import { FaCheck } from "react-icons/fa";
 
 import { SectionHeader } from "./../sectionHeader";
 import { StarRating } from "./../starRating";
@@ -11,7 +11,7 @@ export const Skills = (props) => {
   return (
     <article className="mt-xs">
       {pdf && <SectionHeader text="Skills" dark />}
-      {!pdf && <SectionHeader icon={faCheck} text="Skills & Expertise" />}
+      {!pdf && <SectionHeader icon={FaCheck} text="Skills & Expertise" />}
       <div className="row my-xxs">
         {skills.map((skill, index) => (
           <div
