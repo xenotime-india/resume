@@ -31,4 +31,11 @@ export default {
       title: "Description",
     },
   ],
+  orderings: [
+    {
+      title: "Sequence",
+      name: "sequence",
+      by: [{ field: "sequence", direction: "asc" }],
+    },
+  ],
 };

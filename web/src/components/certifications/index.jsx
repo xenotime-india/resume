@@ -18,7 +18,7 @@ export const Certifications = (props) => {
               <FontAwesomeIcon icon={faCircle} color="#4679bd" />
               <FontAwesomeIcon
                 color="white"
-                icon={certificate.icon_name === "cloud" ? faCloud : faCode}
+                icon={certificate.iconName === "cloud" ? faCloud : faCode}
                 transform="shrink-8"
               />
             </span>

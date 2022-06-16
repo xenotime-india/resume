@@ -21,4 +21,11 @@ export default {
       title: "Icon Name",
     },
   ],
+  orderings: [
+    {
+      title: "Sequence",
+      name: "sequence",
+      by: [{ field: "sequence", direction: "asc" }],
+    },
+  ],
 };

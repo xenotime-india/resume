@@ -5,6 +5,15 @@
   background-color: variables.$dark;
   color: white;
   text-align: center;
+  .circle-icon {
+    background: #ffc0c0;
+    padding: 30px;
+    border-radius: 50%;
+  }
+  .fa-stack {
+    height: 50px;
+    width: 1.5em;
+  }
 }
 .footerLink {
   color: white;

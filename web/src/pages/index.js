@@ -68,7 +68,9 @@ export const query = graphql`
         _key
       }
     }
-    professionalExperiences: allSanityProfessionalExperience {
+    professionalExperiences: allSanityProfessionalExperience(
+      sort: { fields: [startDate], order: DESC }
+    ) {
       edges {
         node {
           id
@@ -81,7 +83,9 @@ export const query = graphql`
         }
       }
     }
-    certifications: allSanityCertification {
+    certifications: allSanityCertification(
+      sort: { fields: [sequence], order: ASC }
+    ) {
       edges {
         node {
           id
@@ -91,7 +95,7 @@ export const query = graphql`
         }
       }
     }
-    educations: allSanityEducation {
+    educations: allSanityEducation(sort: { fields: [sequence], order: ASC }) {
       edges {
         node {
           id
@@ -103,7 +107,7 @@ export const query = graphql`
         }
       }
     }
-    skills: allSanitySkill {
+    skills: allSanitySkill(sort: { fields: [sequence], order: ASC }) {
       edges {
         node {
           level

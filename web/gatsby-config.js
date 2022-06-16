@@ -12,6 +12,13 @@ module.exports = {
         ...clientConfig.sanity,
       },
     },
+    {
+      resolve: `gatsby-plugin-google-fonts`,
+      options: {
+        fonts: [`Raleway:wght@300;400;500;600`],
+        display: "swap",
+      },
+    },
     "gatsby-plugin-sass",
     "gatsby-plugin-image",
     "gatsby-plugin-react-helmet",

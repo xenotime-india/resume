@@ -1,39 +1,39 @@
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import * as FontAwesomeIcon from "react-icons/fa";
+import { FaCircle } from "react-icons/fa";
 
 export const Footer = (props) => {
-  const { personalInformation, links, pdf = false } = props;
-  const { fullName } = personalInformation;
+  const { personalInformation, pdf = false } = props;
+  const { fullName, links } = personalInformation;
+
+  const linkRender = ({ link }) => {
+    const FaIcon = FontAwesomeIcon[link.iconName];
+    return (
+      <div className="col-auto" key={link.href}>
+        <a
+          className="d-block fa-3x"
+          href={link.href}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <span className="sr-only">
+            {personalInformation.fullName} on {link.title}
+          </span>
+          <span className="fa-stack small">
+            <FaCircle className="fa-stack-2x icon-background" />
+            <FaIcon color="#ffffff" size={25} className="fa-stack-1x" />
+          </span>
+        </a>
+      </div>
+    );
+  };
 
   return (
     <footer className="footer">
       <div className={pdf ? "container-fluid" : "container"}>
         {!pdf && links && (
           <div className="row gx-0 justify-content-center">
-            {links.map((link) => (
-              <div className="col-auto" key={link.href}>
-                <a
-                  className="d-block fa-3x"
-                  href={link.href}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <span className="sr-only">
-                    {personalInformation.given_name} on {link.title}
-                  </span>
-                  <span className="fa-layers fa-fw">
-                    <FontAwesomeIcon icon={faCircle} />
-                    <FontAwesomeIcon
-                      aria-hidden
-                      color="white"
-                      icon={["fab", link.icon_name]}
-                      transform="shrink-8"
-                    />
-                  </span>
-                </a>
-              </div>
-            ))}
+            {links.map(linkRender)}
           </div>
         )}
 

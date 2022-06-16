@@ -36,4 +36,11 @@ export default {
       title: "End Date",
     },
   ],
+  orderings: [
+    {
+      title: "Start Date",
+      name: "startDate",
+      by: [{ field: "startDate", direction: "asc" }],
+    },
+  ],
 };
