@@ -15,7 +15,7 @@ export const SectionHeader = (props) => {
           })}
         >
           <FaCircle color="#4679bd" className="fa-stack-2x" size={32} />
-          <FaIcon color="#ffffff" size={20} className="fa-stack-1x" />
+          <FaIcon color="#ffffff" size={15} className="fa-stack-1x" />
         </span>
       )}
       <span
