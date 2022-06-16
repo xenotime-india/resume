@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import classNames from "classnames";
 import PortableText from "../portableText";
-
+import { formatDate } from "../../lib/helpers";
 export const ProfessionalItem = (props) => {
   const {
     organization,
@@ -31,7 +31,8 @@ export const ProfessionalItem = (props) => {
       </h6>
       <div>
         <FontAwesomeIcon className="me-xxxs" icon={faCalendar} />
-        {startDate}–{isCurrent ? "Current" : endDate}
+        {formatDate(new Date(startDate))} –{" "}
+        {isCurrent ? "Current" : endDate ? formatDate(new Date(endDate)) : null}
       </div>
       <div className={pdf ? "mt-xxxs" : "mt-xxs"}>
         <PortableText blocks={_rawDescription} />

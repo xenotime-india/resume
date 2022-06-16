@@ -75,3 +75,10 @@ export function sliceIntoChunks(arr, chunkSize) {
   }
   return res;
 }
+
+export const formatDate = (date) => {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+};
