@@ -12,8 +12,8 @@ const components = {
   },
   list: {
     // Ex. 1: customizing common list types
-    bullet: ({ children }) => <ul className="mt-xl">{children}</ul>,
-    number: ({ children }) => <ol className="mt-lg">{children}</ol>,
+    bullet: ({ children }) => <ul>{children}</ul>,
+    number: ({ children }) => <ol>{children}</ol>,
 
     // Ex. 2: rendering custom lists
     checkmarks: ({ children }) => (
@@ -22,9 +22,7 @@ const components = {
   },
   listItem: {
     // Ex. 1: customizing common list types
-    bullet: ({ children }) => (
-      <li style={{ listStyleType: "disclosure-closed" }}>{children}</li>
-    ),
+    bullet: ({ children }) => <li>{children}</li>,
 
     // Ex. 2: rendering custom list items
     checkmarks: ({ children }) => <li>✅ {children}</li>,
