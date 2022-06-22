@@ -150,11 +150,7 @@ const PDFPage = ({ data }) => {
 
         <div className="pdfMain">
           <Section color="primary" pdf>
-            <Header
-              pdf
-              subtitle={personalInformation.job_title}
-              title={fullName}
-            />
+            <Header pdf subtitle={jobTitle} title={fullName} />
             <AboutMe personalInformation={personalInformation} pdf />
           </Section>
           <Section color="white" pdf>
