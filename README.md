@@ -8,27 +8,39 @@ Static resume site built with Astro, deployed to GitHub Pages.
 
 ## Download PDFs
 
-| Theme | PDF |
-|---|---|
-| CloudAlgo *(active)* | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
-| CloudAlgo | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
-| Editorial | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
-| Brutalist | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
-| Luxury | [resume-luxury.pdf](https://xenotime-india.github.io/resume/resume-luxury.pdf) |
-| Noir | [resume-noir.pdf](https://xenotime-india.github.io/resume/resume-noir.pdf) |
-| Blueprint | [resume-blueprint.pdf](https://xenotime-india.github.io/resume/resume-blueprint.pdf) |
-| Broadsheet | [resume-broadsheet.pdf](https://xenotime-india.github.io/resume/resume-broadsheet.pdf) |
-| Executive | [resume-executive.pdf](https://xenotime-india.github.io/resume/resume-executive.pdf) |
+| Theme | Style | PDF |
+|---|---|---|
+| CloudAlgo *(active)* | Minimal monochrome, timeline | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
+| CloudAlgo | Minimal monochrome, timeline | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
+| Editorial | Luxury editorial, cream + gold | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
+| Brutalist | Swiss grid, yellow + black | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
+| Luxury | Warm organic, cream + terracotta | [resume-luxury.pdf](https://xenotime-india.github.io/resume/resume-luxury.pdf) |
+| Noir | Dark cinematic, gold on near-black | [resume-noir.pdf](https://xenotime-india.github.io/resume/resume-noir.pdf) |
+| Blueprint | Technical / architectural, navy | [resume-blueprint.pdf](https://xenotime-india.github.io/resume/resume-blueprint.pdf) |
+| Broadsheet | Newspaper front page, newsprint | [resume-broadsheet.pdf](https://xenotime-india.github.io/resume/resume-broadsheet.pdf) |
+| Executive | Pure white professional, modern | [resume-executive.pdf](https://xenotime-india.github.io/resume/resume-executive.pdf) |
 
 ---
 
 ## Themes
 
-Four themes — switch by editing one line in `src/config.ts`:
+8 themes available. Switch by setting `ACTIVE_THEME` — three ways:
 
+**1. Local default** — edit `src/config.ts`:
 ```ts
-export const ACTIVE_THEME = 'cloudalgo' // 'editorial' | 'brutalist' | 'luxury' | 'cloudalgo'
+// change the fallback value
+export const ACTIVE_THEME: Theme =
+  (VALID_THEMES.includes(envTheme ?? '')) ? envTheme : 'cloudalgo'
 ```
+
+**2. Local env var** — no file changes needed:
+```bash
+ACTIVE_THEME=executive npm run dev
+ACTIVE_THEME=noir npm run build:all
+```
+
+**3. GitHub Actions** — changes the live site:
+> Repo → **Settings → Variables → Actions** → `ACTIVE_THEME` = `executive`
 
 | Theme | Style | Fonts |
 |---|---|---|
@@ -36,10 +48,10 @@ export const ACTIVE_THEME = 'cloudalgo' // 'editorial' | 'brutalist' | 'luxury' 
 | `editorial` | Luxury editorial, cream + gold | Cormorant Garamond + JetBrains Mono |
 | `brutalist` | Swiss grid, yellow + black | Bebas Neue + Space Mono |
 | `luxury` | Warm organic, cream + terracotta | DM Serif Display + DM Mono |
-| `noir` | Dark cinematic, gold on near-black | Playfair Display + Crimson Pro |
-| `blueprint` | Technical/architectural, navy grid | IBM Plex Mono |
-| `broadsheet` | Newspaper front page, newsprint | Playfair Display + Merriweather |
-| `executive` | Pure white professional, modern | Plus Jakarta Sans 800 |
+| `noir` | Dark cinematic, gold glow on near-black | Playfair Display + Crimson Pro |
+| `blueprint` | Technical / architectural, navy grid | IBM Plex Mono |
+| `broadsheet` | Newspaper front page, newsprint bg | Playfair Display + Merriweather |
+| `executive` | Pure white corporate, pill tags | Plus Jakarta Sans 800 |
 
 ---
 
@@ -98,7 +110,7 @@ npm run dev               # http://localhost:4321/resume
 npm run build             # Build static site → dist/
 npm run build:pdf         # Generate PDF for active theme → dist/resume.pdf
 npm run build:all         # Build + generate active theme PDF
-npm run build:all-themes  # Build + generate PDFs for all 4 themes
+npm run build:all-themes  # Build + generate PDFs for all 8 themes
 ```
 
 ---
@@ -106,11 +118,14 @@ npm run build:all-themes  # Build + generate PDFs for all 4 themes
 ## Deployment
 
 Push to `main` — GitHub Actions automatically:
-1. Builds site for each theme via `generate-all-pdfs.js`
+1. Builds the site for each of the 8 themes
 2. Generates a PDF per theme using Puppeteer (headless Chrome)
-3. Deploys `dist/` (HTML + all PDFs) to the `gh-pages` branch
+3. Deploys `dist/` (HTML + 9 PDFs) to the `gh-pages` branch
 
 **GitHub Pages settings:** Source → Deploy from branch → `gh-pages` / `/ (root)`
+
+**Change live theme without code changes:**
+GitHub repo → Settings → Variables → Actions → set `ACTIVE_THEME` to any theme name.
 
 ---
 
@@ -118,7 +133,7 @@ Push to `main` — GitHub Actions automatically:
 
 ```
 src/
-├── config.ts                  ← Active theme + personal info
+├── config.ts                  ← Active theme + personal info + certifications
 ├── content/
 │   ├── config.ts              ← Content Collections schema
 │   ├── experience/            ← One .md per job
@@ -128,16 +143,20 @@ src/
 ├── layouts/
 │   ├── BaseLayout.astro       ← Theme router
 │   └── themes/
-│       ├── CloudAlgo.astro
-│       ├── Editorial.astro
-│       ├── Brutalist.astro
-│       └── Luxury.astro
+│       ├── CloudAlgo.astro    ← Minimal monochrome
+│       ├── Editorial.astro    ← Luxury editorial
+│       ├── Brutalist.astro    ← Swiss grid
+│       ├── Luxury.astro       ← Warm organic
+│       ├── Noir.astro         ← Dark cinematic
+│       ├── Blueprint.astro    ← Technical / navy
+│       ├── Broadsheet.astro   ← Newspaper
+│       └── Executive.astro    ← Pure white corporate
 └── pages/
     └── index.astro            ← Queries all collections
 
 scripts/
 ├── generate-pdf.js            ← Puppeteer PDF generator (single theme)
-└── generate-all-pdfs.js       ← Generates PDFs for all 4 themes
+└── generate-all-pdfs.js       ← Generates PDFs for all 8 themes
 
 .github/workflows/
 └── deploy.yml                 ← Build + all PDFs + deploy pipeline
