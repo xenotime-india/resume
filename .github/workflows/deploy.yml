@@ -24,11 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Astro site
-        run: npm run build
-
-      - name: Generate PDF (Puppeteer)
-        run: node scripts/generate-pdf.js
+      - name: Build site + generate all theme PDFs
+        run: npm run build:all-themes
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

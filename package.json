@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "build:pdf": "node scripts/generate-pdf.js",
-    "build:all": "astro build && node scripts/generate-pdf.js"
+    "build:all": "astro build && node scripts/generate-pdf.js",
+    "build:all-themes": "node scripts/generate-all-pdfs.js"
   },
   "dependencies": {
     "astro": "^5.0.0"
