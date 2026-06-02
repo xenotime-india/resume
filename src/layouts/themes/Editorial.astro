@@ -363,14 +363,14 @@ function parseBullets(body: string): string[] {
 
       /* ── Print ───────────────────────────────────── */
       @media print {
-        body { padding: 0; background: var(--cream); }
+        body { padding: 14mm 16mm !important; background: var(--cream); }
         .page { padding: 0 !important; max-width: 100% !important; }
         .download-btn { display: none !important; }
         .experience-entry, .project-entry, .education-entry { break-inside: avoid; }
         .section-label { break-after: avoid; }
         [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        @page { size: A4; margin: 12mm 14mm; }
+        @page { size: A4; margin: 0; }
       }
     </style>
   </head>
