@@ -417,7 +417,8 @@ function parseBullets(body: string): string[] {
         .experience-entry, .project-entry, .edu-entry, .cert-entry { break-inside: avoid; }
         .section-heading { break-after: avoid; }
         [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
-        .header-name, .header-title, .header-summary, .header-contact { opacity: 1 !important; animation: none !important; }
+        .header-name { opacity: 1 !important; animation: none !important; transform: none !important; }
+        .header-title, .header-summary, .header-contact { opacity: 1 !important; animation: none !important; }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @page { size: A4; margin: 10mm 0; }
       }
