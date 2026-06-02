@@ -1,14 +1,26 @@
 # Resume — Sandeep Kumar
 
-Static resume site built with Astro, deployed to GitHub Pages.  
-Live: **https://xenotime-india.github.io/resume/**  
-PDF: **https://xenotime-india.github.io/resume/resume.pdf**
+Static resume site built with Astro, deployed to GitHub Pages.
+
+🌐 **Live:** https://xenotime-india.github.io/resume/
+
+---
+
+## Download PDFs
+
+| Theme | PDF |
+|---|---|
+| CloudAlgo *(active)* | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
+| Editorial | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
+| Brutalist | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
+| Luxury | [resume-luxury.pdf](https://xenotime-india.github.io/resume/resume-luxury.pdf) |
+| CloudAlgo | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
 
 ---
 
 ## Themes
 
-Four themes available — switch by editing one line in `src/config.ts`:
+Four themes — switch by editing one line in `src/config.ts`:
 
 ```ts
 export const ACTIVE_THEME = 'cloudalgo' // 'editorial' | 'brutalist' | 'luxury' | 'cloudalgo'
@@ -71,13 +83,14 @@ Short description of the project and its impact.
 
 ```bash
 npm install
-npm run dev          # http://localhost:4321/resume
+npm run dev               # http://localhost:4321/resume
 ```
 
 ```bash
-npm run build        # Build static site → dist/
-npm run build:pdf    # Generate PDF from built site → dist/resume.pdf
-npm run build:all    # Both in sequence
+npm run build             # Build static site → dist/
+npm run build:pdf         # Generate PDF for active theme → dist/resume.pdf
+npm run build:all         # Build + generate active theme PDF
+npm run build:all-themes  # Build + generate PDFs for all 4 themes
 ```
 
 ---
@@ -85,9 +98,9 @@ npm run build:all    # Both in sequence
 ## Deployment
 
 Push to `main` — GitHub Actions automatically:
-1. Runs `astro build`
-2. Generates `resume.pdf` via Puppeteer (headless Chrome)
-3. Deploys `dist/` to the `gh-pages` branch
+1. Builds site for each theme via `generate-all-pdfs.js`
+2. Generates a PDF per theme using Puppeteer (headless Chrome)
+3. Deploys `dist/` (HTML + all PDFs) to the `gh-pages` branch
 
 **GitHub Pages settings:** Source → Deploy from branch → `gh-pages` / `/ (root)`
 
@@ -115,8 +128,9 @@ src/
     └── index.astro            ← Queries all collections
 
 scripts/
-└── generate-pdf.js            ← Puppeteer PDF generator
+├── generate-pdf.js            ← Puppeteer PDF generator (single theme)
+└── generate-all-pdfs.js       ← Generates PDFs for all 4 themes
 
 .github/workflows/
-└── deploy.yml                 ← Build + PDF + deploy pipeline
+└── deploy.yml                 ← Build + all PDFs + deploy pipeline
 ```
