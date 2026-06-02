@@ -1,0 +1,655 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:       #f5f5f2;
+        --ink:      #0c0c0a;
+        --ink-mid:  #5a5a58;
+        --ink-soft: #9a9a96;
+        --ink-faint:#c8c8c4;
+        --rule:     #d8d8d3;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 16px; scroll-behavior: smooth; }
+
+      body {
+        background: var(--bg);
+        color: var(--ink-mid);
+        font-family: 'Outfit', system-ui, sans-serif;
+        font-weight: 400;
+        min-height: 100vh;
+        padding-bottom: 100px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Noise texture */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+        opacity: 0.025;
+        pointer-events: none;
+        z-index: 1000;
+      }
+
+      /* ── Download button ─────────────────────────── */
+      .download-btn {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        background: var(--ink);
+        color: var(--bg);
+        font-family: 'Outfit', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 2px;
+        z-index: 100;
+        transition: opacity 0.2s;
+      }
+      .download-btn:hover { opacity: 0.6; }
+
+      /* ── Page ────────────────────────────────────── */
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 48px;
+      }
+
+      /* ── Header ──────────────────────────────────── */
+      .header {
+        padding: 72px 0 0;
+      }
+
+      .header-name {
+        font-size: clamp(52px, 9.5vw, 96px);
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 0.92;
+        letter-spacing: -3px;
+        margin-bottom: 0;
+        /* Animate in */
+        opacity: 0;
+        transform: translateY(32px);
+        animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+      }
+
+      .header-rule {
+        height: 1px;
+        background: var(--ink);
+        margin: 20px 0 18px;
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: expand 0.6s cubic-bezier(0.22,1,0.36,1) 0.5s forwards;
+      }
+
+      .header-meta {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: start;
+        gap: 24px;
+        padding-bottom: 48px;
+        opacity: 0;
+        animation: fade 0.5s ease 0.8s forwards;
+      }
+
+      .header-role {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--ink-mid);
+        letter-spacing: 0.2px;
+        margin-bottom: 12px;
+      }
+
+      .header-contact {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--ink-soft);
+        line-height: 2;
+      }
+      .header-contact a {
+        color: var(--ink-soft);
+        text-decoration: none;
+      }
+      .header-contact a:hover { color: var(--ink); }
+
+      .header-summary {
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        line-height: 1.78;
+        max-width: 480px;
+        text-align: right;
+      }
+
+      /* ── Keyframes ───────────────────────────────── */
+      @keyframes rise {
+        to { opacity: 1; transform: none; }
+      }
+      @keyframes expand {
+        to { opacity: 1; transform: scaleX(1); }
+      }
+      @keyframes fade {
+        to { opacity: 1; }
+      }
+
+      /* ── Section ─────────────────────────────────── */
+      .section {
+        margin-bottom: 68px;
+        position: relative;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Giant ghost section numeral */
+      .section-num {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 120px;
+        font-weight: 900;
+        color: var(--ink);
+        opacity: 0.04;
+        line-height: 1;
+        letter-spacing: -4px;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        flex-shrink: 0;
+      }
+
+      .section-line {
+        flex: 1;
+        height: 1px;
+        background: var(--rule);
+      }
+
+      /* ── Scroll reveal ───────────────────────────── */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1),
+                    transform 0.6s cubic-bezier(0.22,1,0.36,1);
+      }
+      [data-reveal].visible { opacity: 1; transform: none; }
+
+      /* ── Experience timeline ─────────────────────── */
+      .timeline {
+        position: relative;
+      }
+      /* Continuous vertical line — sits in the gap between columns */
+      .timeline::before {
+        content: '';
+        position: absolute;
+        left: 96px;
+        top: 8px;
+        bottom: 8px;
+        width: 1px;
+        background: linear-gradient(to bottom, var(--rule), var(--rule) 90%, transparent);
+      }
+
+      .experience-entry {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 0 48px;
+        padding-bottom: 40px;
+        position: relative;
+      }
+      .experience-entry:last-child { padding-bottom: 0; }
+
+      /* Timeline dot — centred on the line, clear of both columns */
+      .experience-entry::after {
+        content: '';
+        position: absolute;
+        left: 92px;
+        top: 8px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 1.5px solid var(--ink-mid);
+        transition: background 0.2s, border-color 0.2s;
+      }
+      .experience-entry:hover::after {
+        background: var(--ink);
+        border-color: var(--ink);
+      }
+
+      .entry-year {
+        text-align: right;
+        padding-right: 0;
+      }
+      .entry-year-start {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+        display: block;
+        line-height: 1.3;
+      }
+      .entry-year-end {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--ink-soft);
+        display: block;
+        line-height: 1.5;
+      }
+
+      .entry-body {}
+
+      .entry-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 4px;
+        transition: color 0.15s;
+      }
+      .experience-entry:hover .entry-title { color: var(--ink-mid); }
+
+      .entry-company {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink-mid);
+        margin-bottom: 14px;
+        letter-spacing: 0.1px;
+      }
+
+      .entry-bullets {
+        list-style: none;
+      }
+      .entry-bullets li {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        line-height: 1.75;
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 5px;
+      }
+      .entry-bullets li::before {
+        content: '–';
+        position: absolute;
+        left: 0;
+        color: var(--ink-faint);
+      }
+
+      /* ── Projects ────────────────────────────────── */
+      .project-entry {
+        padding: 22px 0;
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        column-gap: 24px;
+        align-items: start;
+      }
+      .project-entry:first-child { border-top: 1px solid var(--rule); }
+
+      .project-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .project-client {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--ink-soft);
+        grid-column: 2;
+        grid-row: 1;
+        text-align: right;
+        white-space: nowrap;
+        padding-top: 3px;
+      }
+      .project-body {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        line-height: 1.75;
+        margin-top: 8px;
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+      .project-tech {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        margin-top: 10px;
+        grid-column: 1 / -1;
+        grid-row: 3;
+      }
+
+      /* ── Skills ──────────────────────────────────── */
+      .skill-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 10px 24px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--rule);
+        align-items: baseline;
+      }
+      .skill-row:first-child { border-top: 1px solid var(--rule); }
+      .skill-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        padding-top: 3px;
+      }
+      .skill-items {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        line-height: 1.75;
+      }
+
+      /* ── Education ───────────────────────────────── */
+      .edu-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .edu-entry:first-child { border-top: 1px solid var(--rule); }
+      .edu-degree {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .edu-institution {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        margin-top: 4px;
+      }
+      .edu-year {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--ink-soft);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* ── Certifications ──────────────────────────── */
+      .cert-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+      .cert-entry {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        align-items: baseline;
+        gap: 0;
+        line-height: 1.55;
+      }
+      .cert-entry:nth-child(odd) { padding-right: 32px; }
+      .cert-entry:nth-child(even) { padding-left: 0; border-left: 1px solid var(--rule); padding-left: 24px; }
+      .cert-entry:nth-child(-n+2) { border-top: 1px solid var(--rule); }
+      .cert-num {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-faint);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── Hobbies ─────────────────────────────────── */
+      .hobbies {
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--ink-mid);
+        line-height: 1.8;
+        max-width: 600px;
+      }
+
+      /* ── Print ───────────────────────────────────── */
+      @media print {
+        body::after { display: none; }
+        body { padding-bottom: 0; }
+        .download-btn { display: none !important; }
+        .header-name { animation: none; opacity: 1; transform: none; }
+        .header-rule { animation: none; opacity: 1; transform: none; }
+        .header-meta { animation: none; opacity: 1; }
+        [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+        .experience-entry, .project-entry, .edu-entry, .cert-entry { break-inside: avoid; }
+        .section-label { break-after: avoid; }
+        .section-num { display: none; }
+        .timeline::before { background: var(--rule); }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 16mm 20mm; }
+      }
+
+      @media (max-width: 640px) {
+        .page { padding: 0 24px; }
+        .header-meta { grid-template-columns: 1fr; }
+        .header-summary { text-align: left; }
+        .timeline::before { left: 72px; }
+        .experience-entry { grid-template-columns: 60px 1fr; gap: 0 36px; }
+        .experience-entry::after { left: 68px; }
+        .cert-grid { grid-template-columns: 1fr; }
+        .cert-entry:nth-child(even) { border-left: none; padding-left: 0; }
+        .cert-entry:nth-child(2) { border-top: none; }
+        .skill-row { grid-template-columns: 90px 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="./resume.pdf" class="download-btn no-print" download>↓ Download PDF</a>
+
+    <main class="page">
+
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-name">{person.name}</h1>
+        <div class="header-rule"></div>
+        <div class="header-meta">
+          <div>
+            <p class="header-role">{person.title}</p>
+            <div class="header-contact">
+              <a href={`mailto:${person.email}`}>{person.email}</a><br />
+              {person.phone}<br />
+              {person.location}<br />
+              <a href={person.linkedinUrl} target="_blank" rel="noopener">LinkedIn ↗</a>
+              &nbsp;&nbsp;
+              <a href={person.githubUrl} target="_blank" rel="noopener">GitHub ↗</a>
+            </div>
+          </div>
+          <p class="header-summary">{person.summary}</p>
+        </div>
+      </header>
+
+      <!-- Experience -->
+      <section class="section" aria-label="Experience">
+        <div class="section-head">
+          <span class="section-label">Experience</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">01</span>
+        </div>
+        <div class="timeline">
+          {experience.map((job, i) => (
+            <article class="experience-entry" data-reveal style={`transition-delay: ${i * 60}ms`}>
+              <div class="entry-year">
+                <span class="entry-year-start">{job.data.startDate.split(' ')[1] ?? job.data.startDate}</span>
+                <span class="entry-year-end">{job.data.endDate === 'Present' ? 'Now' : job.data.endDate.split(' ')[1] ?? job.data.endDate}</span>
+              </div>
+              <div class="entry-body">
+                <div class="entry-title">{job.data.title}</div>
+                <div class="entry-company">{job.data.company}{job.data.location ? ` · ${job.data.location}` : ''}</div>
+                <ul class="entry-bullets">
+                  {parseBullets(job.body).map(b => <li>{b}</li>)}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section class="section" aria-label="Projects">
+        <div class="section-head">
+          <span class="section-label">Projects</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">02</span>
+        </div>
+        {projects.map((p, i) => (
+          <article class="project-entry" data-reveal style={`transition-delay: ${i * 45}ms`}>
+            <span class="project-name">{p.data.name}</span>
+            {p.data.client && <span class="project-client">{p.data.client}</span>}
+            <p class="project-body">{p.body.trim()}</p>
+            <div class="project-tech">{p.data.tech.join(' · ')}</div>
+          </article>
+        ))}
+      </section>
+
+      <!-- Skills -->
+      <section class="section" aria-label="Skills">
+        <div class="section-head">
+          <span class="section-label">Skills</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">03</span>
+        </div>
+        <div data-reveal>
+          {skills.map(group => (
+            <div class="skill-row">
+              <span class="skill-label">{group.label}</span>
+              <span class="skill-items">{group.items.join(', ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Education -->
+      <section class="section" aria-label="Education">
+        <div class="section-head">
+          <span class="section-label">Education</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">04</span>
+        </div>
+        <div data-reveal>
+          {education.map(edu => (
+            <div class="edu-entry">
+              <div>
+                <div class="edu-degree">{edu.degree}</div>
+                <div class="edu-institution">{edu.institution}</div>
+              </div>
+              {edu.year && <span class="edu-year">{edu.year}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="section" aria-label="Certifications">
+        <div class="section-head">
+          <span class="section-label">Certifications</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">05</span>
+        </div>
+        <div class="cert-grid" data-reveal>
+          {certifications.map((cert, i) => (
+            <div class="cert-entry">
+              <span class="cert-num">{String(i + 1).padStart(2, '0')}</span>
+              <span>{cert}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Interests -->
+      <section class="section" aria-label="Interests">
+        <div class="section-head">
+          <span class="section-label">Interests</span>
+          <span class="section-line"></span>
+          <span class="section-num" aria-hidden="true">06</span>
+        </div>
+        <p class="hobbies" data-reveal>{hobbies}</p>
+      </section>
+
+    </main>
+
+    <script>
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        entries => entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) }
+        }),
+        { threshold: 0.06 }
+      )
+      document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el))
+
+      // Fit name to content width
+      const name = document.querySelector('.header-name')
+      const page = document.querySelector('.page')
+      if (name && page) {
+        const fit = () => {
+          const target = page.clientWidth - 96
+          let size = parseInt(getComputedStyle(name).fontSize)
+          name.style.fontSize = size + 'px'
+          while (name.scrollWidth < target && size < 200) { size++; name.style.fontSize = size + 'px' }
+          while (name.scrollWidth > target && size > 40) { size--; name.style.fontSize = size + 'px' }
+        }
+        fit()
+        window.addEventListener('resize', fit)
+      }
+    </script>
+  </body>
+</html>

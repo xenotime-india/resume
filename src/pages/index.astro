@@ -1,0 +1,33 @@
+---
+import { getCollection, getEntry } from 'astro:content'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { PERSON, CERTIFICATIONS, HOBBIES } from '../config'
+
+const experienceEntries = await getCollection('experience')
+const experience = experienceEntries
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(e => ({ data: e.data, body: e.body }))
+
+const projectEntries = await getCollection('projects')
+const projects = projectEntries
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(e => ({ data: e.data, body: e.body }))
+
+const skillsEntry = await getEntry('skills', 'skills')
+const skills = skillsEntry?.data.groups ?? []
+
+const educationEntries = await getCollection('education')
+const education = educationEntries
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(e => e.data)
+---
+
+<BaseLayout
+  person={PERSON}
+  experience={experience}
+  projects={projects}
+  skills={skills}
+  education={education}
+  certifications={[...CERTIFICATIONS]}
+  hobbies={HOBBIES}
+/>

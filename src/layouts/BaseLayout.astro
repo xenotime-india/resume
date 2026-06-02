@@ -1,0 +1,44 @@
+---
+import { ACTIVE_THEME, type Theme } from '../config'
+import Editorial from './themes/Editorial.astro'
+import Brutalist from './themes/Brutalist.astro'
+import Luxury from './themes/Luxury.astro'
+import CloudAlgo from './themes/CloudAlgo.astro'
+
+interface Props {
+  person: {
+    name: string
+    title: string
+    email: string
+    phone: string
+    location: string
+    linkedin: string
+    linkedinUrl: string
+    github: string
+    githubUrl: string
+    summary: string
+  }
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<{ institution: string; degree: string; year?: number; order: number }>
+  certifications: string[]
+  hobbies: string
+}
+
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+const theme: Theme = ACTIVE_THEME
+---
+
+{theme === 'editorial' && (
+  <Editorial person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'brutalist' && (
+  <Brutalist person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'luxury' && (
+  <Luxury person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'cloudalgo' && (
+  <CloudAlgo person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}

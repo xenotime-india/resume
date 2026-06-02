@@ -1,0 +1,529 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cream: #faf6f0;
+        --cream-dark: #f0e8dc;
+        --terra: #c4714a;
+        --terra-light: #d9956f;
+        --terra-faint: rgba(196, 113, 74, 0.08);
+        --brown: #1c1410;
+        --brown-mid: #5c4d43;
+        --brown-light: #9e8e82;
+        --rule: #e8ddd4;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html { font-size: 16px; }
+
+      body {
+        background: var(--cream);
+        color: var(--brown);
+        font-family: 'DM Mono', monospace;
+        min-height: 100vh;
+        padding-bottom: 80px;
+      }
+
+      /* ── Decorative orb ──────────────────────────── */
+      body::before {
+        content: '';
+        position: fixed;
+        top: -120px;
+        right: -120px;
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,113,74,0.10) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::after {
+        content: '';
+        position: fixed;
+        bottom: -80px;
+        left: -80px;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(196,113,74,0.06) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Download button ─────────────────────────── */
+      .download-btn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--terra);
+        color: var(--cream);
+        font-family: 'DM Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 11px 20px;
+        border-radius: 40px;
+        z-index: 100;
+        transition: background 0.2s, transform 0.2s;
+      }
+      .download-btn:hover { background: var(--terra-light); transform: translateY(-2px); }
+
+      /* ── Page wrapper ────────────────────────────── */
+      .page {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 0 40px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Header ──────────────────────────────────── */
+      .header {
+        padding: 52px 0 32px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0 24px;
+        align-items: flex-start;
+        margin-bottom: 0;
+      }
+
+      .header-bar {
+        width: 5px;
+        background: var(--terra);
+        border-radius: 3px;
+        align-self: stretch;
+        min-height: 72px;
+        flex-shrink: 0;
+      }
+
+      .header-content { }
+
+      .header-name {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(42px, 5.5vw, 64px);
+        font-weight: 400;
+        color: var(--brown);
+        line-height: 0.95;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+      }
+      .header-name em {
+        font-style: italic;
+        color: var(--terra);
+      }
+
+      .header-role {
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--brown-light);
+        margin-bottom: 16px;
+      }
+
+      .header-contact {
+        font-size: 13px;
+        color: var(--brown-mid);
+        line-height: 2;
+        letter-spacing: 0.3px;
+      }
+      .header-contact a {
+        color: var(--terra);
+        text-decoration: none;
+      }
+      .header-contact a:hover { text-decoration: underline; }
+      .header-contact span { color: var(--brown-light); margin: 0 6px; }
+
+      /* ── Horizontal rule ─────────────────────────── */
+      .ruled {
+        height: 1px;
+        background: linear-gradient(to right, var(--terra), transparent);
+        opacity: 0.3;
+        margin: 24px 0 32px;
+      }
+
+      /* ── Summary ─────────────────────────────────── */
+      .summary {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 18px;
+        font-style: italic;
+        color: var(--brown-mid);
+        line-height: 1.65;
+        max-width: 640px;
+        margin-bottom: 48px;
+      }
+
+      /* ── Section ─────────────────────────────────── */
+      .section {
+        margin-bottom: 56px;
+      }
+
+      .section-heading {
+        font-size: 10px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--terra);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .section-heading::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--rule);
+      }
+
+      /* ── Experience entries ───────────────────────── */
+      .experience-entry {
+        display: grid;
+        grid-template-columns: 1fr 100px;
+        gap: 4px 16px;
+        padding: 26px 0;
+        border-bottom: 1px solid var(--rule);
+        align-items: start;
+      }
+      .experience-entry:last-child { border-bottom: none; }
+
+      .entry-main { }
+
+      .entry-title {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 20px;
+        color: var(--brown);
+        line-height: 1.1;
+        margin-bottom: 3px;
+      }
+
+      .entry-company {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--brown-light);
+        margin-bottom: 10px;
+      }
+
+      .entry-dates {
+        font-size: 11px;
+        color: var(--terra);
+        text-align: right;
+        letter-spacing: 0.5px;
+        padding-top: 4px;
+        line-height: 1.6;
+      }
+
+      .entry-bullets {
+        list-style: none;
+        grid-column: 1 / -1;
+        margin-top: -4px;
+      }
+      .entry-bullets li {
+        font-size: 15px;
+        color: var(--brown-mid);
+        line-height: 1.78;
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 7px;
+      }
+      .entry-bullets li::before {
+        content: '·';
+        position: absolute;
+        left: 4px;
+        color: var(--terra-light);
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      /* ── Project entries ─────────────────────────── */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+
+      .project-entry {
+        padding: 24px 24px 24px 0;
+        border-bottom: 1px solid var(--rule);
+        border-right: 1px solid var(--rule);
+      }
+      .project-entry:nth-child(even) {
+        padding-right: 0;
+        padding-left: 24px;
+        border-right: none;
+      }
+      .project-entry:nth-last-child(-n+2) { border-bottom: none; }
+
+      .project-name {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 18px;
+        color: var(--brown);
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+      .project-client {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--brown-light);
+        margin-bottom: 8px;
+      }
+      .project-body {
+        font-size: 14px;
+        color: var(--brown-mid);
+        line-height: 1.78;
+        margin-bottom: 12px;
+      }
+      .project-tech {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tech-tag {
+        font-size: 10px;
+        letter-spacing: 0.5px;
+        color: var(--terra);
+        background: var(--terra-faint);
+        border: 0.5px solid rgba(196,113,74,0.25);
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+
+      /* ── Skills ──────────────────────────────────── */
+      .skills-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .skill-group {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 12px;
+        align-items: baseline;
+      }
+      .skill-group-label {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--terra);
+      }
+      .skill-items {
+        font-size: 14px;
+        color: var(--brown-mid);
+        line-height: 1.75;
+        letter-spacing: 0.3px;
+      }
+
+      /* ── Education ───────────────────────────────── */
+      .education-entry {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 16px;
+        align-items: baseline;
+      }
+      .education-entry:last-child { border-bottom: none; }
+      .edu-degree {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: 18px;
+        color: var(--brown);
+      }
+      .edu-institution {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--brown-light);
+        grid-column: 1;
+      }
+      .edu-year {
+        font-size: 11px;
+        color: var(--terra);
+        letter-spacing: 0.5px;
+        text-align: right;
+        grid-row: 1;
+        grid-column: 2;
+        align-self: start;
+        padding-top: 4px;
+      }
+
+      /* ── Scroll reveal ───────────────────────────── */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      [data-reveal].visible {
+        opacity: 1;
+        transform: none;
+      }
+
+      /* ── Print ───────────────────────────────────── */
+      @media print {
+        body::before, body::after { display: none; }
+        body { padding-bottom: 0; background: var(--cream); }
+        .download-btn { display: none !important; }
+        .experience-entry, .project-entry, .education-entry { break-inside: avoid; }
+        .section-heading { break-after: avoid; }
+        [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 18mm 20mm; }
+      }
+
+      @media (max-width: 640px) {
+        .projects-grid { grid-template-columns: 1fr; }
+        .project-entry, .project-entry:nth-child(even) {
+          padding-left: 0; padding-right: 0; border-right: none;
+        }
+        .skill-group { grid-template-columns: 1fr; gap: 4px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="./resume.pdf" class="download-btn no-print" download>↓ Download PDF</a>
+
+    <main class="page">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-bar"></div>
+        <div class="header-content">
+          <h1 class="header-name">
+            {person.name.split(' ')[0]} <em>{person.name.split(' ').slice(1).join(' ')}</em>
+          </h1>
+          <p class="header-role">{person.title}</p>
+          <div class="header-contact">
+            <a href={`mailto:${person.email}`}>{person.email}</a>
+            <span>·</span>{person.phone}
+            <span>·</span>{person.location}<br />
+            <a href={person.linkedinUrl} target="_blank" rel="noopener">LinkedIn ↗</a>
+            <span>·</span>
+            <a href={person.githubUrl} target="_blank" rel="noopener">GitHub ↗</a>
+          </div>
+        </div>
+      </header>
+
+      <div class="ruled"></div>
+
+      <p class="summary" data-reveal>{person.summary}</p>
+
+      <!-- Experience -->
+      <section class="section" aria-label="Experience">
+        <h2 class="section-heading">Experience</h2>
+        {experience.map((job, i) => (
+          <article class="experience-entry" data-reveal style={`transition-delay: ${i * 70}ms`}>
+            <div class="entry-main">
+              <div class="entry-title">{job.data.title}</div>
+              <div class="entry-company">{job.data.company}{job.data.location ? ` · ${job.data.location}` : ''}</div>
+            </div>
+            <div class="entry-dates">{job.data.startDate}<br />–<br />{job.data.endDate}</div>
+            <ul class="entry-bullets">
+              {parseBullets(job.body).map(b => <li>{b}</li>)}
+            </ul>
+          </article>
+        ))}
+      </section>
+
+      <!-- Projects -->
+      <section class="section" aria-label="Projects">
+        <h2 class="section-heading">Projects</h2>
+        <div class="projects-grid">
+          {projects.map((p, i) => (
+            <article class="project-entry" data-reveal style={`transition-delay: ${i * 60}ms`}>
+              <div class="project-name">{p.data.name}</div>
+              {p.data.client && <div class="project-client">{p.data.client}</div>}
+              <p class="project-body">{p.body.trim()}</p>
+              <div class="project-tech">
+                {p.data.tech.map((t: string) => <span class="tech-tag">{t}</span>)}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- Skills -->
+      <section class="section" aria-label="Skills">
+        <h2 class="section-heading">Skills</h2>
+        <div class="skills-list" data-reveal>
+          {skills.map(group => (
+            <div class="skill-group">
+              <span class="skill-group-label">{group.label}</span>
+              <span class="skill-items">{group.items.join(' · ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Education -->
+      <section class="section" aria-label="Education">
+        <h2 class="section-heading">Education</h2>
+        <div data-reveal>
+          {education.map(edu => (
+            <div class="education-entry">
+              <div class="edu-degree">{edu.degree}</div>
+              {edu.year && <div class="edu-year">{edu.year}</div>}
+              <div class="edu-institution">{edu.institution}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="section" aria-label="Certifications">
+        <h2 class="section-heading">Certifications</h2>
+        <div data-reveal style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;">
+          {certifications.map(cert => (
+            <div style="font-size:12px;color:var(--brown-mid);line-height:1.6;padding-left:14px;position:relative;">
+              <span style="position:absolute;left:2px;color:var(--terra-light);font-size:16px;line-height:1.3;">·</span>
+              {cert}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Hobbies -->
+      <section class="section" aria-label="Interests">
+        <h2 class="section-heading">Interests</h2>
+        <p data-reveal style="font-family:'DM Serif Display',serif;font-style:italic;font-size:17px;color:var(--brown-mid);line-height:1.65;max-width:600px;">
+          {hobbies}
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const observer = new IntersectionObserver(
+        entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } }),
+        { threshold: 0.08 }
+      )
+      document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el))
+    </script>
+  </body>
+</html>
