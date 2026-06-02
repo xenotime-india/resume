@@ -4,6 +4,8 @@ import Editorial from './themes/Editorial.astro'
 import Brutalist from './themes/Brutalist.astro'
 import Luxury from './themes/Luxury.astro'
 import CloudAlgo from './themes/CloudAlgo.astro'
+import Noir from './themes/Noir.astro'
+import Blueprint from './themes/Blueprint.astro'
 
 interface Props {
   person: {
@@ -41,4 +43,10 @@ const theme: Theme = ACTIVE_THEME
 )}
 {theme === 'cloudalgo' && (
   <CloudAlgo person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'noir' && (
+  <Noir person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'blueprint' && (
+  <Blueprint person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
 )}

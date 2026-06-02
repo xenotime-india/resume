@@ -1,0 +1,623 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:       #09182e;
+        --bg-mid:   #0d2040;
+        --ink:      #c8dff5;
+        --ink-mid:  #7aacce;
+        --ink-soft: #3d6f94;
+        --white:    #ffffff;
+        --grid:     rgba(30, 80, 140, 0.35);
+        --rule:     #1a3558;
+        --cyan:     #4fc3e8;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 16px; }
+
+      body {
+        background: var(--bg);
+        color: var(--ink-mid);
+        font-family: 'IBM Plex Mono', 'Courier New', monospace;
+        font-weight: 400;
+        min-height: 100vh;
+        padding-bottom: 100px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Blueprint grid background */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+          linear-gradient(rgba(30,80,140,0.12) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(30,80,140,0.12) 1px, transparent 1px);
+        background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Subtle radial light */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(79,195,232,0.04) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Download button */
+      .download-btn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: transparent;
+        color: var(--cyan);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 10px 18px;
+        border: 1px solid var(--rule);
+        z-index: 100;
+        transition: background 0.2s, border-color 0.2s;
+      }
+      .download-btn:hover { background: rgba(79,195,232,0.06); border-color: var(--cyan); }
+
+      .page {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 0 40px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Document header bar ─────────────────── */
+      .doc-header {
+        border-bottom: 1px solid var(--rule);
+        padding: 16px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 10px;
+        color: var(--ink-soft);
+        letter-spacing: 2px;
+        margin-bottom: 48px;
+        opacity: 0;
+        animation: fadein 0.4s ease 0.1s forwards;
+      }
+      .doc-ref { color: var(--cyan); }
+
+      /* ── Header ──────────────────────────────── */
+      .header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0 40px;
+        align-items: start;
+        padding-bottom: 40px;
+        border-bottom: 1px solid var(--rule);
+        margin-bottom: 48px;
+      }
+
+      .header-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--ink-soft);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.2s forwards;
+      }
+
+      .header-name {
+        font-size: clamp(32px, 4.5vw, 52px);
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+        opacity: 0;
+        animation: slideup 0.6s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+      }
+
+      .header-title {
+        font-size: 12px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.6s forwards;
+      }
+
+      .header-summary {
+        font-size: 13px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.8;
+        max-width: 480px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.8s forwards;
+      }
+
+      .header-contact {
+        text-align: right;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.7s forwards;
+      }
+      .contact-line {
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--ink-soft);
+        line-height: 2.2;
+        letter-spacing: 0.3px;
+      }
+      .contact-line a { color: var(--cyan); text-decoration: none; }
+      .contact-line a:hover { color: var(--white); }
+
+      /* Blueprint corner marks */
+      .corner-mark {
+        width: 12px;
+        height: 12px;
+        border-top: 1px solid var(--ink-soft);
+        border-left: 1px solid var(--ink-soft);
+        position: absolute;
+      }
+
+      @keyframes fadein { to { opacity: 1; } }
+      @keyframes slideup { to { opacity: 1; transform: none; } }
+
+      /* ── Section ─────────────────────────────── */
+      .section {
+        margin-bottom: 52px;
+      }
+
+      /* Engineering annotation header */
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        position: relative;
+      }
+      .section-bracket {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--cyan);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+      .section-bracket::before { content: '[ '; color: var(--ink-soft); }
+      .section-bracket::after  { content: ' ]'; color: var(--ink-soft); }
+      .section-line {
+        flex: 1;
+        height: 1px;
+        background: var(--rule);
+        position: relative;
+      }
+      .section-line::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: -2px;
+        width: 5px;
+        height: 5px;
+        border-right: 1px solid var(--ink-soft);
+        border-top: 1px solid var(--ink-soft);
+        transform: rotate(45deg);
+      }
+      .section-num {
+        font-size: 10px;
+        color: var(--ink-soft);
+        letter-spacing: 1px;
+      }
+
+      /* ── Experience ──────────────────────────── */
+      .experience-entry {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 0 24px;
+        position: relative;
+      }
+      .experience-entry:first-child { border-top: 1px solid var(--rule); }
+
+      /* Coordinate marker */
+      .entry-coord {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--cyan);
+        letter-spacing: 0.5px;
+        padding-top: 3px;
+        line-height: 1.6;
+      }
+      .entry-coord-end { color: var(--ink-soft); font-weight: 300; }
+
+      .entry-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1.2;
+        margin-bottom: 3px;
+        letter-spacing: 0.3px;
+      }
+      .entry-company {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--cyan);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      .entry-bullets { list-style: none; }
+      .entry-bullets li {
+        font-size: 12.5px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.78;
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 4px;
+      }
+      .entry-bullets li::before {
+        content: '>';
+        position: absolute;
+        left: 0;
+        color: var(--cyan);
+        font-weight: 700;
+        font-size: 11px;
+      }
+
+      /* ── Projects ────────────────────────────── */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--rule);
+      }
+      .project-entry {
+        background: var(--bg);
+        padding: 18px 20px;
+        transition: background 0.15s;
+      }
+      .project-entry:hover { background: var(--bg-mid); }
+      .project-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--white);
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        line-height: 1.2;
+      }
+      .project-client {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--cyan);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .project-body {
+        font-size: 11.5px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.72;
+        margin-bottom: 10px;
+      }
+      .project-tech {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--ink-soft);
+        letter-spacing: 0.3px;
+      }
+
+      /* ── Skills ──────────────────────────────── */
+      .skill-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 8px 24px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule);
+        align-items: baseline;
+      }
+      .skill-row:first-child { border-top: 1px solid var(--rule); }
+      .skill-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--cyan);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .skill-items {
+        font-size: 12.5px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.7;
+        letter-spacing: 0.2px;
+      }
+
+      /* ── Education ───────────────────────────── */
+      .edu-entry {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule);
+        align-items: baseline;
+      }
+      .edu-entry:first-child { border-top: 1px solid var(--rule); }
+      .edu-degree {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--white);
+        letter-spacing: 0.3px;
+      }
+      .edu-institution {
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--ink-soft);
+        margin-top: 3px;
+        letter-spacing: 0.3px;
+      }
+      .edu-year {
+        font-size: 11px;
+        color: var(--cyan);
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* ── Certifications ──────────────────────── */
+      .cert-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--rule);
+      }
+      .cert-entry {
+        background: var(--bg);
+        padding: 11px 14px;
+        font-size: 11.5px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        line-height: 1.4;
+      }
+      .cert-num {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--cyan);
+        flex-shrink: 0;
+        letter-spacing: 0.5px;
+      }
+
+      .hobbies-text {
+        font-size: 13px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.8;
+        max-width: 600px;
+        letter-spacing: 0.2px;
+      }
+
+      /* ── Reveal ──────────────────────────────── */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1), transform 0.5s cubic-bezier(0.22,1,0.36,1);
+      }
+      [data-reveal].visible { opacity: 1; transform: none; }
+
+      /* ── Print ───────────────────────────────── */
+      @media print {
+        body::before, body::after { display: none; }
+        body { background: var(--bg); padding: 0 14mm; }
+        html { background: var(--bg); }
+        .download-btn { display: none !important; }
+        .experience-entry, .project-entry, .edu-entry, .cert-entry { break-inside: avoid; }
+        .section-bracket { break-after: avoid; }
+        [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+        .doc-header, .header-label, .header-name, .header-title,
+        .header-summary, .header-contact { opacity: 1 !important; animation: none !important; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 10mm 0; }
+      }
+
+      @media (max-width: 640px) {
+        .header { grid-template-columns: 1fr; }
+        .projects-grid, .cert-grid { grid-template-columns: 1fr; }
+        .skill-row { grid-template-columns: 90px 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="./resume.pdf" class="download-btn no-print" download>↓ Download PDF</a>
+
+    <main class="page">
+
+      <!-- Document meta bar -->
+      <div class="doc-header">
+        <span>// RESUME <span class="doc-ref">v2.0</span></span>
+        <span class="doc-ref">{person.name.toUpperCase()}</span>
+        <span>CONFIDENTIAL</span>
+      </div>
+
+      <!-- Header -->
+      <header class="header">
+        <div>
+          <p class="header-label">// Engineer Profile</p>
+          <h1 class="header-name" style="opacity:0;transform:translateY(16px)">{person.name}</h1>
+          <p class="header-title">{person.title}</p>
+          <p class="header-summary">{person.summary}</p>
+        </div>
+        <div class="header-contact">
+          {[
+            { label: person.email, href: `mailto:${person.email}` },
+            { label: person.phone },
+            { label: person.location },
+            { label: 'LinkedIn ↗', href: person.linkedinUrl },
+            { label: 'GitHub ↗',   href: person.githubUrl },
+          ].map(item => (
+            <div class="contact-line">
+              {item.href ? <a href={item.href} target="_blank" rel="noopener">{item.label}</a> : item.label}
+            </div>
+          ))}
+        </div>
+      </header>
+
+      <!-- Experience -->
+      <section class="section" aria-label="Experience">
+        <div class="section-heading">
+          <span class="section-bracket">Experience</span>
+          <span class="section-line"></span>
+          <span class="section-num">01</span>
+        </div>
+        {experience.map((job, i) => (
+          <article class="experience-entry" data-reveal style={`transition-delay:${i*55}ms`}>
+            <div class="entry-coord">
+              <div>{job.data.startDate}</div>
+              <div class="entry-coord-end">{job.data.endDate}</div>
+            </div>
+            <div>
+              <div class="entry-title">{job.data.title}</div>
+              <div class="entry-company">{job.data.company}{job.data.location ? ` · ${job.data.location}` : ''}</div>
+              <ul class="entry-bullets">
+                {parseBullets(job.body).map(b => <li>{b}</li>)}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <!-- Projects -->
+      <section class="section" aria-label="Projects">
+        <div class="section-heading">
+          <span class="section-bracket">Projects</span>
+          <span class="section-line"></span>
+          <span class="section-num">02</span>
+        </div>
+        <div class="projects-grid" data-reveal>
+          {projects.map(p => (
+            <article class="project-entry">
+              <div class="project-name">{p.data.name}</div>
+              {p.data.client && <div class="project-client">{p.data.client}</div>}
+              <p class="project-body">{p.body.trim()}</p>
+              <div class="project-tech">{p.data.tech.join(' · ')}</div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- Skills -->
+      <section class="section" aria-label="Skills">
+        <div class="section-heading">
+          <span class="section-bracket">Skills</span>
+          <span class="section-line"></span>
+          <span class="section-num">03</span>
+        </div>
+        <div data-reveal>
+          {skills.map(group => (
+            <div class="skill-row">
+              <span class="skill-label">{group.label}</span>
+              <span class="skill-items">{group.items.join(', ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Education -->
+      <section class="section" aria-label="Education">
+        <div class="section-heading">
+          <span class="section-bracket">Education</span>
+          <span class="section-line"></span>
+          <span class="section-num">04</span>
+        </div>
+        <div data-reveal>
+          {education.map(edu => (
+            <div class="edu-entry">
+              <div>
+                <div class="edu-degree">{edu.degree}</div>
+                <div class="edu-institution">{edu.institution}</div>
+              </div>
+              {edu.year && <span class="edu-year">{edu.year}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="section" aria-label="Certifications">
+        <div class="section-heading">
+          <span class="section-bracket">Certifications</span>
+          <span class="section-line"></span>
+          <span class="section-num">05</span>
+        </div>
+        <div class="cert-grid" data-reveal>
+          {certifications.map((cert, i) => (
+            <div class="cert-entry">
+              <span class="cert-num">{String(i+1).padStart(2,'0')}</span>
+              <span>{cert}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Interests -->
+      <section class="section" aria-label="Interests">
+        <div class="section-heading">
+          <span class="section-bracket">Interests</span>
+          <span class="section-line"></span>
+          <span class="section-num">06</span>
+        </div>
+        <p class="hobbies-text" data-reveal>{hobbies}</p>
+      </section>
+
+    </main>
+
+    <script>
+      const obs = new IntersectionObserver(
+        es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target) } }),
+        { threshold: 0.06 }
+      )
+      document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el))
+    </script>
+  </body>
+</html>

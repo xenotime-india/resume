@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, copyFileSync,
          mkdirSync, rmSync, existsSync, statSync }               from 'node:fs'
 import { resolve }                                               from 'node:path'
 
-const THEMES         = ['editorial', 'brutalist', 'luxury', 'cloudalgo']
+const THEMES         = ['editorial', 'brutalist', 'luxury', 'cloudalgo', 'noir', 'blueprint']
 const configPath     = resolve('./src/config.ts')
 const originalConfig = readFileSync(configPath, 'utf8')
 const tempDir        = resolve('./dist-pdfs-temp')

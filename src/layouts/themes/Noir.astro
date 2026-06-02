@@ -1,0 +1,615 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,700;1,900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg:        #0d0d10;
+        --bg-lift:   #13131a;
+        --ink:       #e8d5b4;
+        --ink-mid:   #b8a58a;
+        --ink-soft:  #7a6b56;
+        --gold:      #c9a84c;
+        --gold-dim:  #7a6328;
+        --rule:      #2a2720;
+        --rule-gold: rgba(201,168,76,0.25);
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 16px; }
+
+      body {
+        background: var(--bg);
+        color: var(--ink-mid);
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-weight: 400;
+        min-height: 100vh;
+        padding-bottom: 100px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Atmospheric vignette */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
+          radial-gradient(ellipse 100% 80% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Subtle noise */
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.03;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Download button */
+      .download-btn {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        background: transparent;
+        color: var(--gold);
+        font-family: 'Courier Prime', monospace;
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 10px 20px;
+        border: 1px solid var(--rule-gold);
+        z-index: 100;
+        transition: background 0.2s, border-color 0.2s;
+      }
+      .download-btn:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 48px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── Header ──────────────────────────────── */
+      .header {
+        padding: 72px 0 0;
+        text-align: center;
+        margin-bottom: 52px;
+      }
+
+      .header-name {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(52px, 7.5vw, 88px);
+        font-weight: 900;
+        font-style: italic;
+        color: var(--gold);
+        line-height: 0.9;
+        letter-spacing: -1px;
+        text-shadow: 0 0 60px rgba(201,168,76,0.2), 0 0 120px rgba(201,168,76,0.08);
+        opacity: 0;
+        transform: translateY(24px);
+        animation: rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+      }
+
+      .header-ornament {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin: 20px 0 18px;
+        opacity: 0;
+        animation: fade 0.6s ease 0.6s forwards;
+      }
+      .header-ornament-line {
+        flex: 1;
+        max-width: 180px;
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--rule-gold));
+      }
+      .header-ornament-line:last-child {
+        background: linear-gradient(to left, transparent, var(--rule-gold));
+      }
+      .header-ornament-diamond {
+        width: 6px;
+        height: 6px;
+        border: 1px solid var(--gold);
+        transform: rotate(45deg);
+        flex-shrink: 0;
+      }
+
+      .header-title {
+        font-family: 'Crimson Pro', serif;
+        font-size: 18px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        letter-spacing: 0.5px;
+        margin-bottom: 18px;
+        opacity: 0;
+        animation: fade 0.5s ease 0.8s forwards;
+      }
+
+      .header-contact {
+        font-family: 'Courier Prime', monospace;
+        font-size: 11px;
+        color: var(--ink-soft);
+        letter-spacing: 1.5px;
+        line-height: 2;
+        opacity: 0;
+        animation: fade 0.5s ease 1s forwards;
+      }
+      .header-contact a { color: var(--gold); text-decoration: none; }
+      .header-contact a:hover { color: var(--ink); }
+      .header-contact .sep { color: var(--rule-gold); margin: 0 8px; }
+
+      .header-summary {
+        font-family: 'Crimson Pro', serif;
+        font-size: 17px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.72;
+        max-width: 620px;
+        margin: 28px auto 0;
+        border-top: 1px solid var(--rule);
+        padding-top: 24px;
+        opacity: 0;
+        animation: fade 0.5s ease 1.1s forwards;
+      }
+
+      @keyframes rise { to { opacity: 1; transform: none; } }
+      @keyframes fade { to { opacity: 1; } }
+
+      /* ── Section ─────────────────────────────── */
+      .section {
+        margin-bottom: 52px;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .section-heading-text {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      .section-heading-line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, var(--rule-gold), transparent);
+      }
+      .section-heading-diamond {
+        width: 5px;
+        height: 5px;
+        border: 1px solid var(--gold-dim);
+        transform: rotate(45deg);
+        flex-shrink: 0;
+      }
+
+      /* ── Experience ──────────────────────────── */
+      .experience-entry {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 0 28px;
+        padding-bottom: 28px;
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--rule);
+        position: relative;
+      }
+      .experience-entry:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+      /* Gold left accent on hover */
+      .experience-entry::before {
+        content: '';
+        position: absolute;
+        left: -24px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gold);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .experience-entry:hover::before { opacity: 0.4; }
+
+      .entry-date {
+        font-family: 'Courier Prime', monospace;
+        font-size: 11px;
+        color: var(--gold);
+        letter-spacing: 0.5px;
+        padding-top: 4px;
+        line-height: 1.6;
+      }
+      .entry-date-end { color: var(--ink-soft); }
+
+      .entry-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
+      .entry-company {
+        font-family: 'Courier Prime', monospace;
+        font-size: 11px;
+        color: var(--gold-dim);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      .entry-bullets { list-style: none; }
+      .entry-bullets li {
+        font-size: 15px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.75;
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 5px;
+      }
+      .entry-bullets li::before {
+        content: '◆';
+        position: absolute;
+        left: 0;
+        font-size: 6px;
+        color: var(--gold-dim);
+        top: 7px;
+      }
+
+      /* ── Projects ────────────────────────────── */
+      .project-entry {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--rule);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 20px;
+        align-items: start;
+      }
+      .project-entry:first-child { border-top: 1px solid var(--rule); }
+
+      .project-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+      }
+      .project-client {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        color: var(--gold-dim);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-top: 3px;
+        margin-bottom: 8px;
+      }
+      .project-body {
+        font-size: 14.5px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.7;
+        margin-bottom: 10px;
+        grid-column: 1 / -1;
+      }
+      .project-tech {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        color: var(--ink-soft);
+        letter-spacing: 0.5px;
+        grid-column: 1 / -1;
+      }
+      .project-client-right {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        color: var(--ink-soft);
+        text-align: right;
+        white-space: nowrap;
+        letter-spacing: 0.5px;
+        padding-top: 3px;
+      }
+
+      /* ── Skills ──────────────────────────────── */
+      .skill-row {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 10px 28px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--rule);
+        align-items: baseline;
+      }
+      .skill-row:first-child { border-top: 1px solid var(--rule); }
+      .skill-label {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--gold-dim);
+      }
+      .skill-items {
+        font-family: 'Crimson Pro', serif;
+        font-size: 15px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.6;
+      }
+
+      /* ── Education / Certs / Hobbies ─────────── */
+      .edu-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .edu-entry:first-child { border-top: 1px solid var(--rule); }
+      .edu-degree {
+        font-family: 'Playfair Display', serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .edu-institution {
+        font-size: 13px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-soft);
+        margin-top: 2px;
+      }
+      .edu-year {
+        font-family: 'Courier Prime', monospace;
+        font-size: 11px;
+        color: var(--gold-dim);
+        white-space: nowrap;
+      }
+
+      .cert-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+      .cert-entry {
+        padding: 11px 0;
+        border-bottom: 1px solid var(--rule);
+        font-family: 'Crimson Pro', serif;
+        font-size: 14px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        line-height: 1.4;
+      }
+      .cert-entry:nth-child(-n+2) { border-top: 1px solid var(--rule); }
+      .cert-entry:nth-child(odd) { padding-right: 24px; }
+      .cert-entry:nth-child(even) { padding-left: 24px; border-left: 1px solid var(--rule); }
+      .cert-num {
+        font-family: 'Courier Prime', monospace;
+        font-size: 10px;
+        color: var(--gold-dim);
+        flex-shrink: 0;
+      }
+
+      .hobbies-text {
+        font-family: 'Crimson Pro', serif;
+        font-size: 16px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.78;
+        max-width: 600px;
+      }
+
+      /* ── Reveal ──────────────────────────────── */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+      }
+      [data-reveal].visible { opacity: 1; transform: none; }
+
+      /* ── Print ───────────────────────────────── */
+      @media print {
+        body::before, body::after { display: none; }
+        body { background: var(--bg); padding: 0 16mm; }
+        html { background: var(--bg); }
+        .download-btn { display: none !important; }
+        .experience-entry, .project-entry, .edu-entry, .cert-entry { break-inside: avoid; }
+        .section-heading-text { break-after: avoid; }
+        [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 10mm 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="./resume.pdf" class="download-btn no-print" download>↓ Download PDF</a>
+
+    <main class="page">
+
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-name">{person.name}</h1>
+        <div class="header-ornament">
+          <span class="header-ornament-line"></span>
+          <span class="header-ornament-diamond"></span>
+          <span class="header-ornament-diamond"></span>
+          <span class="header-ornament-diamond"></span>
+          <span class="header-ornament-line"></span>
+        </div>
+        <p class="header-title">{person.title}</p>
+        <div class="header-contact">
+          <a href={`mailto:${person.email}`}>{person.email}</a>
+          <span class="sep">◆</span>
+          {person.phone}
+          <span class="sep">◆</span>
+          {person.location}
+          <span class="sep">◆</span>
+          <a href={person.linkedinUrl} target="_blank" rel="noopener">LinkedIn</a>
+          <span class="sep">◆</span>
+          <a href={person.githubUrl} target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <p class="header-summary">{person.summary}</p>
+      </header>
+
+      <!-- Experience -->
+      <section class="section" aria-label="Experience">
+        <div class="section-heading">
+          <span class="section-heading-text">Experience</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        {experience.map((job, i) => (
+          <article class="experience-entry" data-reveal style={`transition-delay:${i*55}ms`}>
+            <div class="entry-date">
+              <div>{job.data.startDate}</div>
+              <div class="entry-date-end">{job.data.endDate}</div>
+            </div>
+            <div>
+              <div class="entry-title">{job.data.title}</div>
+              <div class="entry-company">{job.data.company}{job.data.location ? ` · ${job.data.location}` : ''}</div>
+              <ul class="entry-bullets">
+                {parseBullets(job.body).map(b => <li>{b}</li>)}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <!-- Projects -->
+      <section class="section" aria-label="Projects">
+        <div class="section-heading">
+          <span class="section-heading-text">Projects</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        {projects.map((p, i) => (
+          <article class="project-entry" data-reveal style={`transition-delay:${i*45}ms`}>
+            <div>
+              <div class="project-name">{p.data.name}</div>
+              {p.data.client && <div class="project-client">{p.data.client}</div>}
+            </div>
+            {p.data.client && <div class="project-client-right">{p.data.client}</div>}
+            <p class="project-body">{p.body.trim()}</p>
+            <div class="project-tech">{p.data.tech.join(' · ')}</div>
+          </article>
+        ))}
+      </section>
+
+      <!-- Skills -->
+      <section class="section" aria-label="Skills">
+        <div class="section-heading">
+          <span class="section-heading-text">Skills</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        <div data-reveal>
+          {skills.map(group => (
+            <div class="skill-row">
+              <span class="skill-label">{group.label}</span>
+              <span class="skill-items">{group.items.join(', ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Education -->
+      <section class="section" aria-label="Education">
+        <div class="section-heading">
+          <span class="section-heading-text">Education</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        <div data-reveal>
+          {education.map(edu => (
+            <div class="edu-entry">
+              <div>
+                <div class="edu-degree">{edu.degree}</div>
+                <div class="edu-institution">{edu.institution}</div>
+              </div>
+              {edu.year && <span class="edu-year">{edu.year}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="section" aria-label="Certifications">
+        <div class="section-heading">
+          <span class="section-heading-text">Certifications</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        <div class="cert-grid" data-reveal>
+          {certifications.map((cert, i) => (
+            <div class="cert-entry">
+              <span class="cert-num">{String(i+1).padStart(2,'0')}</span>
+              <span>{cert}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- Interests -->
+      <section class="section" aria-label="Interests">
+        <div class="section-heading">
+          <span class="section-heading-text">Interests</span>
+          <span class="section-heading-line"></span>
+          <span class="section-heading-diamond"></span>
+        </div>
+        <p class="hobbies-text" data-reveal>{hobbies}</p>
+      </section>
+
+    </main>
+
+    <script>
+      const obs = new IntersectionObserver(
+        es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target) } }),
+        { threshold: 0.06 }
+      )
+      document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el))
+    </script>
+  </body>
+</html>
