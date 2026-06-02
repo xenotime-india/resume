@@ -1,5 +1,5 @@
 export const ACTIVE_THEME = 'cloudalgo' as const
-export type Theme = 'editorial' | 'brutalist' | 'luxury' | 'cloudalgo' | 'noir' | 'blueprint'
+export type Theme = 'editorial' | 'brutalist' | 'luxury' | 'cloudalgo' | 'noir' | 'blueprint' | 'broadsheet' | 'executive'
 
 export const PERSON = {
   name: 'Sandeep Kumar',

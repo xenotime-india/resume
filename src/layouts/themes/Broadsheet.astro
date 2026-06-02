@@ -1,0 +1,571 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+
+const year = new Date().getFullYear()
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --newsprint:  #f8f4e8;
+        --ink:        #111111;
+        --ink-mid:    #333333;
+        --ink-light:  #666666;
+        --ink-faint:  #999999;
+        --rule:       #111111;
+        --rule-light: #cccccc;
+        --red:        #b5131b;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 16px; }
+
+      body {
+        background: var(--newsprint);
+        color: var(--ink-mid);
+        font-family: 'Merriweather', Georgia, serif;
+        font-weight: 300;
+        min-height: 100vh;
+        padding-bottom: 100px;
+      }
+
+      /* Download button */
+      .download-btn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--ink);
+        color: var(--newsprint);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 10px 18px;
+        z-index: 100;
+        transition: opacity 0.2s;
+      }
+      .download-btn:hover { opacity: 0.75; }
+
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 40px;
+      }
+
+      /* ── Dateline bar ────────────────────────── */
+      .dateline {
+        padding: 10px 0;
+        border-top: 3px solid var(--ink);
+        border-bottom: 1px solid var(--ink);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--ink-light);
+        margin-top: 32px;
+      }
+      .dateline-center { color: var(--red); letter-spacing: 3px; }
+
+      /* ── Masthead ────────────────────────────── */
+      .masthead {
+        text-align: center;
+        padding: 28px 0 24px;
+        border-bottom: 3px double var(--ink);
+        margin-bottom: 0;
+      }
+
+      .masthead-name {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(56px, 8vw, 96px);
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 0.9;
+        letter-spacing: -2px;
+        opacity: 0;
+        transform: translateY(16px);
+        animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+      }
+
+      .masthead-rule {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        margin: 14px 0 10px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.5s forwards;
+      }
+      .masthead-rule-line {
+        flex: 1;
+        max-width: 120px;
+        height: 1px;
+        background: var(--ink);
+      }
+      .masthead-rule-ornament {
+        font-family: 'Playfair Display', serif;
+        font-size: 14px;
+        color: var(--ink-faint);
+        letter-spacing: 6px;
+      }
+
+      .masthead-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 16px;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--ink-light);
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.7s forwards;
+      }
+
+      .masthead-contact {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        color: var(--ink-faint);
+        letter-spacing: 1px;
+        opacity: 0;
+        animation: fadein 0.5s ease 0.9s forwards;
+      }
+      .masthead-contact a { color: var(--ink-light); text-decoration: none; }
+      .masthead-contact a:hover { color: var(--ink); text-decoration: underline; }
+      .masthead-contact .sep { margin: 0 8px; color: var(--rule-light); }
+
+      @keyframes rise { to { opacity: 1; transform: none; } }
+      @keyframes fadein { to { opacity: 1; } }
+
+      /* ── Lead / summary ──────────────────────── */
+      .lead {
+        padding: 20px 0 20px;
+        border-bottom: 1px solid var(--ink);
+        display: grid;
+        grid-template-columns: 2px 1fr;
+        gap: 0 20px;
+        align-items: stretch;
+      }
+      .lead-bar { background: var(--red); }
+      .lead-text {
+        font-family: 'Merriweather', Georgia, serif;
+        font-size: 16px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.75;
+      }
+
+      /* ── Section heading — newspaper style ───── */
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 20px;
+        margin-top: 32px;
+      }
+      .section-heading-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--ink);
+        padding: 0 14px;
+        white-space: nowrap;
+      }
+      .section-heading-rule {
+        flex: 1;
+        border: none;
+        border-top: 1px solid var(--ink);
+      }
+      .section-heading-rule-double {
+        flex: 1;
+        border: none;
+        border-top: 3px double var(--ink);
+      }
+
+      /* ── Experience — newspaper column style ─── */
+      .experience-entry {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--rule-light);
+        position: relative;
+      }
+      .experience-entry:last-child { border-bottom: none; }
+
+      .entry-headline {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 2px;
+      }
+      .entry-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+      }
+      .entry-dateline {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        color: var(--ink-faint);
+        letter-spacing: 1px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .entry-byline {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--red);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .entry-bullets { list-style: none; }
+      .entry-bullets li {
+        font-size: 14px;
+        font-weight: 300;
+        color: var(--ink-mid);
+        line-height: 1.75;
+        padding-left: 16px;
+        position: relative;
+        margin-bottom: 4px;
+      }
+      .entry-bullets li::before {
+        content: '—';
+        position: absolute;
+        left: 0;
+        color: var(--ink-faint);
+      }
+
+      /* ── Two-column grid for lower sections ──── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 40px;
+      }
+      .two-col-full { grid-column: 1 / -1; }
+
+      /* ── Projects ────────────────────────────── */
+      .project-entry {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--rule-light);
+      }
+      .project-entry:first-child { border-top: 1px solid var(--rule-light); }
+      .project-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 3px;
+      }
+      .project-client {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--red);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .project-body {
+        font-size: 13px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.68;
+        margin-bottom: 7px;
+      }
+      .project-tech {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        color: var(--ink-faint);
+        letter-spacing: 0.5px;
+      }
+
+      /* ── Skills ──────────────────────────────── */
+      .skill-row {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--rule-light);
+      }
+      .skill-row:first-child { border-top: 1px solid var(--rule-light); }
+      .skill-label {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 4px;
+      }
+      .skill-items {
+        font-size: 13px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.6;
+      }
+
+      /* ── Education / Certs ───────────────────── */
+      .edu-entry {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--rule-light);
+      }
+      .edu-entry:first-child { border-top: 1px solid var(--rule-light); }
+      .edu-degree {
+        font-family: 'Playfair Display', serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+      }
+      .edu-institution {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        color: var(--ink-faint);
+        letter-spacing: 1px;
+        margin-top: 3px;
+        text-transform: uppercase;
+      }
+      .edu-year {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 10px;
+        color: var(--red);
+        float: right;
+      }
+
+      .cert-entry {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--rule-light);
+        font-size: 12px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.4;
+        display: flex;
+        gap: 8px;
+      }
+      .cert-entry:first-child { border-top: 1px solid var(--rule-light); }
+      .cert-num {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 9px;
+        color: var(--ink-faint);
+        flex-shrink: 0;
+        padding-top: 1px;
+      }
+
+      .hobbies-text {
+        font-size: 14px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--ink-mid);
+        line-height: 1.78;
+        border-left: 2px solid var(--red);
+        padding-left: 16px;
+        max-width: 560px;
+      }
+
+      /* ── Reveal ──────────────────────────────── */
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1);
+      }
+      [data-reveal].visible { opacity: 1; transform: none; }
+
+      /* ── Print ───────────────────────────────── */
+      @media print {
+        body { background: var(--newsprint); padding: 0 14mm; }
+        html { background: var(--newsprint); }
+        .download-btn { display: none !important; }
+        .experience-entry, .project-entry, .edu-entry, .cert-entry { break-inside: avoid; }
+        .section-heading { break-after: avoid; }
+        [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+        .masthead-name, .masthead-rule, .masthead-title, .masthead-contact { opacity: 1 !important; animation: none !important; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4; margin: 10mm 0; }
+      }
+
+      @media (max-width: 640px) {
+        .two-col { grid-template-columns: 1fr; }
+        .two-col-full { grid-column: 1; }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="./resume.pdf" class="download-btn no-print" download>↓ Download PDF</a>
+
+    <main class="page">
+
+      <!-- Dateline -->
+      <div class="dateline">
+        <span>Est. {new Date(experience[experience.length-1]?.data?.startDate ?? '2010').getFullYear()} · Jaipur, India</span>
+        <span class="dateline-center">Software Engineering</span>
+        <span>Vol. {new Date().getFullYear() - 2010 + 1} · Issue 1</span>
+      </div>
+
+      <!-- Masthead -->
+      <div class="masthead">
+        <h1 class="masthead-name">{person.name}</h1>
+        <div class="masthead-rule">
+          <span class="masthead-rule-line"></span>
+          <span class="masthead-rule-ornament">✦ ✦ ✦</span>
+          <span class="masthead-rule-line"></span>
+        </div>
+        <p class="masthead-title">{person.title}</p>
+        <div class="masthead-contact">
+          <a href={`mailto:${person.email}`}>{person.email}</a>
+          <span class="sep">·</span>{person.phone}
+          <span class="sep">·</span>{person.location}
+          <span class="sep">·</span>
+          <a href={person.linkedinUrl} target="_blank" rel="noopener">LinkedIn</a>
+          <span class="sep">·</span>
+          <a href={person.githubUrl} target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+
+      <!-- Lead / Summary -->
+      <div class="lead" data-reveal>
+        <div class="lead-bar"></div>
+        <p class="lead-text">{person.summary}</p>
+      </div>
+
+      <!-- Experience -->
+      <div class="section-heading">
+        <hr class="section-heading-rule-double" style="max-width:40px" />
+        <span class="section-heading-text">Experience</span>
+        <hr class="section-heading-rule" />
+      </div>
+      {experience.map((job, i) => (
+        <article class="experience-entry" data-reveal style={`transition-delay:${i*50}ms`}>
+          <div class="entry-headline">
+            <span class="entry-title">{job.data.title}</span>
+            <span class="entry-dateline">{job.data.startDate} — {job.data.endDate}</span>
+          </div>
+          <div class="entry-byline">{job.data.company}{job.data.location ? ` · ${job.data.location}` : ''}</div>
+          <ul class="entry-bullets">
+            {parseBullets(job.body).map(b => <li>{b}</li>)}
+          </ul>
+        </article>
+      ))}
+
+      <!-- Two-column lower sections -->
+      <div class="two-col">
+
+        <!-- Projects -->
+        <div>
+          <div class="section-heading">
+            <hr class="section-heading-rule-double" style="max-width:20px" />
+            <span class="section-heading-text">Projects</span>
+            <hr class="section-heading-rule" />
+          </div>
+          {projects.map((p, i) => (
+            <article class="project-entry" data-reveal style={`transition-delay:${i*40}ms`}>
+              <div class="project-name">{p.data.name}</div>
+              {p.data.client && <div class="project-client">{p.data.client}</div>}
+              <p class="project-body">{p.body.trim()}</p>
+              <div class="project-tech">{p.data.tech.join(' · ')}</div>
+            </article>
+          ))}
+        </div>
+
+        <!-- Right column: Skills + Education + Certs -->
+        <div>
+          <!-- Skills -->
+          <div class="section-heading">
+            <hr class="section-heading-rule-double" style="max-width:20px" />
+            <span class="section-heading-text">Skills</span>
+            <hr class="section-heading-rule" />
+          </div>
+          <div data-reveal>
+            {skills.map(group => (
+              <div class="skill-row">
+                <div class="skill-label">{group.label}</div>
+                <div class="skill-items">{group.items.join(', ')}</div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Education -->
+          <div class="section-heading">
+            <hr class="section-heading-rule-double" style="max-width:20px" />
+            <span class="section-heading-text">Education</span>
+            <hr class="section-heading-rule" />
+          </div>
+          <div data-reveal>
+            {education.map(edu => (
+              <div class="edu-entry">
+                {edu.year && <span class="edu-year">{edu.year}</span>}
+                <div class="edu-degree">{edu.degree}</div>
+                <div class="edu-institution">{edu.institution}</div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Certifications -->
+          <div class="section-heading">
+            <hr class="section-heading-rule-double" style="max-width:20px" />
+            <span class="section-heading-text">Certifications</span>
+            <hr class="section-heading-rule" />
+          </div>
+          <div data-reveal>
+            {certifications.map((cert, i) => (
+              <div class="cert-entry">
+                <span class="cert-num">{String(i+1).padStart(2,'0')}</span>
+                <span>{cert}</span>
+              </div>
+            ))}
+          </div>
+
+          <!-- Interests -->
+          <div class="section-heading">
+            <hr class="section-heading-rule-double" style="max-width:20px" />
+            <span class="section-heading-text">Interests</span>
+            <hr class="section-heading-rule" />
+          </div>
+          <p class="hobbies-text" data-reveal>{hobbies}</p>
+        </div>
+      </div>
+
+    </main>
+
+    <script>
+      const obs = new IntersectionObserver(
+        es => es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target) } }),
+        { threshold: 0.06 }
+      )
+      document.querySelectorAll('[data-reveal]').forEach(el => obs.observe(el))
+    </script>
+  </body>
+</html>

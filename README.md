@@ -11,10 +11,14 @@ Static resume site built with Astro, deployed to GitHub Pages.
 | Theme | PDF |
 |---|---|
 | CloudAlgo *(active)* | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
+| CloudAlgo | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
 | Editorial | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
 | Brutalist | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
 | Luxury | [resume-luxury.pdf](https://xenotime-india.github.io/resume/resume-luxury.pdf) |
-| CloudAlgo | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
+| Noir | [resume-noir.pdf](https://xenotime-india.github.io/resume/resume-noir.pdf) |
+| Blueprint | [resume-blueprint.pdf](https://xenotime-india.github.io/resume/resume-blueprint.pdf) |
+| Broadsheet | [resume-broadsheet.pdf](https://xenotime-india.github.io/resume/resume-broadsheet.pdf) |
+| Executive | [resume-executive.pdf](https://xenotime-india.github.io/resume/resume-executive.pdf) |
 
 ---
 
@@ -32,6 +36,10 @@ export const ACTIVE_THEME = 'cloudalgo' // 'editorial' | 'brutalist' | 'luxury' 
 | `editorial` | Luxury editorial, cream + gold | Cormorant Garamond + JetBrains Mono |
 | `brutalist` | Swiss grid, yellow + black | Bebas Neue + Space Mono |
 | `luxury` | Warm organic, cream + terracotta | DM Serif Display + DM Mono |
+| `noir` | Dark cinematic, gold on near-black | Playfair Display + Crimson Pro |
+| `blueprint` | Technical/architectural, navy grid | IBM Plex Mono |
+| `broadsheet` | Newspaper front page, newsprint | Playfair Display + Merriweather |
+| `executive` | Pure white professional, modern | Plus Jakarta Sans 800 |
 
 ---
 

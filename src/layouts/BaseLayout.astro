@@ -6,6 +6,8 @@ import Luxury from './themes/Luxury.astro'
 import CloudAlgo from './themes/CloudAlgo.astro'
 import Noir from './themes/Noir.astro'
 import Blueprint from './themes/Blueprint.astro'
+import Broadsheet from './themes/Broadsheet.astro'
+import Executive from './themes/Executive.astro'
 
 interface Props {
   person: {
@@ -49,4 +51,10 @@ const theme: Theme = ACTIVE_THEME
 )}
 {theme === 'blueprint' && (
   <Blueprint person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'broadsheet' && (
+  <Broadsheet person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
+{theme === 'executive' && (
+  <Executive person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
 )}
