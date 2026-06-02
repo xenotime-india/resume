@@ -26,6 +26,10 @@ jobs:
 
       - name: Build site + generate all theme PDFs
         run: npm run build:all-themes
+        env:
+          # Set ACTIVE_THEME in: GitHub repo → Settings → Variables → Actions
+          # Leave unset to use the default theme (cloudalgo)
+          ACTIVE_THEME: ${{ vars.ACTIVE_THEME }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

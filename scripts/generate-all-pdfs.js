@@ -1,47 +1,37 @@
 /**
  * Generates a PDF for every theme and places them all in dist/.
  *
+ * Each theme is activated by passing ACTIVE_THEME as an env var to astro build —
+ * no config.ts file mutations needed.
+ *
  * Output:
- *   dist/resume.pdf              ← active theme (as configured in src/config.ts)
+ *   dist/resume.pdf              ← active theme (ACTIVE_THEME env var or default)
  *   dist/resume-editorial.pdf
  *   dist/resume-brutalist.pdf
- *   dist/resume-luxury.pdf
- *   dist/resume-cloudalgo.pdf
+ *   ... (one per theme)
  *
  * Run: node scripts/generate-all-pdfs.js
+ * Run with custom active: ACTIVE_THEME=executive node scripts/generate-all-pdfs.js
  */
 
-import { spawnSync }                                              from 'node:child_process'
-import { readFileSync, writeFileSync, copyFileSync,
-         mkdirSync, rmSync, existsSync, statSync }               from 'node:fs'
-import { resolve }                                               from 'node:path'
+import { spawnSync }                              from 'node:child_process'
+import { copyFileSync, mkdirSync, rmSync,
+         existsSync, statSync }                  from 'node:fs'
+import { resolve }                               from 'node:path'
 
-const THEMES         = ['editorial', 'brutalist', 'luxury', 'cloudalgo', 'noir', 'blueprint', 'broadsheet', 'executive']
-const configPath     = resolve('./src/config.ts')
-const originalConfig = readFileSync(configPath, 'utf8')
-const tempDir        = resolve('./dist-pdfs-temp')
+const THEMES      = ['editorial', 'brutalist', 'luxury', 'cloudalgo', 'noir', 'blueprint', 'broadsheet', 'executive']
+const activeTheme = process.env.ACTIVE_THEME ?? 'cloudalgo'
+const tempDir     = resolve('./dist-pdfs-temp')
 
-// Extract active theme before we start
-const activeMatch    = originalConfig.match(/ACTIVE_THEME = '([^']+)'/)
-const originalTheme  = activeMatch?.[1] ?? 'cloudalgo'
-
-/** Run a command safely via spawnSync — no shell interpolation. */
-const run = (cmd, args) => {
-  const result = spawnSync(cmd, args, { stdio: 'inherit' })
+/** Spawn a command safely — args are an array, no shell interpolation. */
+const run = (cmd, args, extraEnv = {}) => {
+  const result = spawnSync(cmd, args, {
+    stdio: 'inherit',
+    env: { ...process.env, ...extraEnv },
+  })
   if (result.status !== 0) throw new Error(`"${cmd} ${args.join(' ')}" exited with code ${result.status}`)
 }
 
-const setTheme = (theme) => {
-  const updated = originalConfig.replace(
-    /export const ACTIVE_THEME = '[^']+' as const/,
-    `export const ACTIVE_THEME = '${theme}' as const`
-  )
-  writeFileSync(configPath, updated)
-}
-
-const restoreConfig = () => writeFileSync(configPath, originalConfig)
-
-// Temp dir to hold PDFs between Astro builds (Astro cleans dist/ each time)
 mkdirSync(tempDir, { recursive: true })
 
 try {
@@ -50,22 +40,20 @@ try {
     console.log(`  Building theme: ${theme}`)
     console.log(`${'─'.repeat(52)}\n`)
 
-    setTheme(theme)
-    run('npm', ['run', 'build'])
+    // Pass theme via env var — no file system mutations
+    run('npm', ['run', 'build'],       { ACTIVE_THEME: theme })
     run('node', ['scripts/generate-pdf.js'])
 
-    // Move PDF to temp dir before next build wipes dist/
     copyFileSync('./dist/resume.pdf', `${tempDir}/resume-${theme}.pdf`)
     console.log(`  ✓ saved resume-${theme}.pdf`)
   }
 
-  // Restore original theme for the final HTML build
+  // Final build uses the intended active theme (env var or default)
   console.log(`\n${'─'.repeat(52)}`)
-  console.log(`  Restoring active theme: ${originalTheme}`)
+  console.log(`  Final build — active theme: ${activeTheme}`)
   console.log(`${'─'.repeat(52)}\n`)
 
-  restoreConfig()
-  run('npm', ['run', 'build'])
+  run('npm', ['run', 'build'],       { ACTIVE_THEME: activeTheme })
   run('node', ['scripts/generate-pdf.js'])
 
   // Copy all theme PDFs back into dist/
@@ -74,13 +62,11 @@ try {
   }
 
 } catch (err) {
-  restoreConfig()
   rmSync(tempDir, { recursive: true, force: true })
-  console.error('\n✗ Failed — config.ts restored.\n', err.message)
+  console.error('\n✗ Failed.\n', err.message)
   process.exit(1)
 }
 
-// Cleanup temp dir
 rmSync(tempDir, { recursive: true, force: true })
 
 // Summary
@@ -93,4 +79,4 @@ for (const theme of THEMES) {
   }
 }
 const mainKb = Math.round(statSync('./dist/resume.pdf').size / 1024)
-console.log(`   resume.pdf          →  ${mainKb} KB  (active: ${originalTheme})`)
+console.log(`   resume.pdf          →  ${mainKb} KB  (active: ${activeTheme})`)

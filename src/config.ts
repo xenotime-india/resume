@@ -1,5 +1,13 @@
-export const ACTIVE_THEME = 'cloudalgo' as const
-export type Theme = 'editorial' | 'brutalist' | 'luxury' | 'cloudalgo' | 'noir' | 'blueprint' | 'broadsheet' | 'executive'
+// Local dev: change the fallback string below to switch themes.
+// CI/CD:     set ACTIVE_THEME in GitHub repo Settings → Variables → Actions.
+const VALID_THEMES = ['editorial','brutalist','luxury','cloudalgo','noir','blueprint','broadsheet','executive'] as const
+export type Theme = typeof VALID_THEMES[number]
+
+const envTheme = import.meta.env.ACTIVE_THEME as string | undefined
+export const ACTIVE_THEME: Theme =
+  (VALID_THEMES as readonly string[]).includes(envTheme ?? '')
+    ? (envTheme as Theme)
+    : 'cloudalgo' // ← default theme
 
 export const PERSON = {
   name: 'Sandeep Kumar',
