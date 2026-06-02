@@ -464,6 +464,7 @@ function parseBullets(body: string): string[] {
       /* ── Print ───────────────────────────────────── */
       @media print {
         body::after { display: none; }
+        html { background: var(--bg) !important; }
         body { padding: 0 16mm !important; background: var(--bg); }
         .page { padding: 0 !important; max-width: 100% !important; }
         .download-btn { display: none !important; }
