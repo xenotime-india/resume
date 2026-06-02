@@ -390,7 +390,6 @@ function parseBullets(body: string): string[] {
       /* ── Print ───────────────────────────────────── */
       @media print {
         body::before, body::after { display: none; }
-        html { background: var(--cream) !important; }
         body { padding: 0 16mm !important; background: var(--cream); }
         .page { padding: 0 !important; max-width: 100% !important; }
         .download-btn { display: none !important; }
@@ -398,7 +397,7 @@ function parseBullets(body: string): string[] {
         .section-heading { break-after: avoid; }
         [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        @page { size: A4; margin: 0; }
+        @page { size: A4; margin: 10mm 0; }
       }
 
       @media (max-width: 640px) {
