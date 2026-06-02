@@ -80,7 +80,7 @@ await page.pdf({
   path: pdfPath,
   format: 'A4',
   printBackground: true,
-  margin: { top: '15mm', bottom: '15mm', left: '15mm', right: '15mm' },
+  margin: { top: '12mm', bottom: '12mm', left: '14mm', right: '14mm' },
 })
 
 await browser.close()

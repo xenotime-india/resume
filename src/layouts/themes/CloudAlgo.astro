@@ -465,6 +465,7 @@ function parseBullets(body: string): string[] {
       @media print {
         body::after { display: none; }
         body { padding-bottom: 0; }
+        .page { padding: 0 !important; max-width: 100% !important; }
         .download-btn { display: none !important; }
         .header-name { animation: none; opacity: 1; transform: none; }
         .header-rule { animation: none; opacity: 1; transform: none; }
@@ -475,7 +476,7 @@ function parseBullets(body: string): string[] {
         .section-num { display: none; }
         .timeline::before { background: var(--rule); }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        @page { size: A4; margin: 16mm 20mm; }
+        @page { size: A4; margin: 12mm 14mm; }
       }
 
       @media (max-width: 640px) {
