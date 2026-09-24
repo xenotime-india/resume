@@ -1,0 +1,470 @@
+---
+interface Props {
+  person: any
+  experience: Array<{ data: any; body: string }>
+  projects: Array<{ data: any; body: string }>
+  skills: Array<{ label: string; items: string[] }>
+  education: Array<any>
+  certifications: string[]
+  hobbies: string
+}
+const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+
+function parseBullets(body: string): string[] {
+  return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
+}
+
+/* Year range for the timeline rail, e.g. "2022 — Present" */
+function yearsOf(job: any): string {
+  const y = (s: string) => s.split(' ').pop()
+  const a = y(job.startDate)
+  const b = job.endDate === 'Present' ? 'Present' : y(job.endDate)
+  return a === b ? a! : `${a} — ${b}`
+}
+
+const CAPABILITIES = [
+  { label: 'Salesforce',   blurb: 'Sales, Service and Experience Cloud builds, Apex, Lightning Web Components, managed packages' },
+  { label: 'Heroku',       blurb: 'Node.js services and microservices that run beside your org and talk to legacy systems' },
+  { label: 'Web apps',     blurb: 'React and Next.js portals, intranets and customer-facing apps' },
+  { label: 'Mobile',       blurb: 'React Native and native iOS, from first build to App Store release' },
+  { label: 'Integrations', blurb: 'REST and SOAP, Office 365, Metadata API tooling, AI services' },
+  { label: 'Data',         blurb: 'PostgreSQL, MongoDB, Redis, reporting and analytics pipelines' },
+]
+
+function clientOf(c?: string): [string, string?] {
+  if (!c) return ['Project']
+  const m = c.match(/^(.*?)\s*\(via (.*?)\)$/)
+  return m ? [m[1], m[2]] : [c]
+}
+
+const sfCerts = certifications.filter(c => c.toLowerCase().includes('salesforce'))
+const otherCerts = certifications.filter(c => !c.toLowerCase().includes('salesforce'))
+
+const firstYear = Math.min(...experience.map(j => parseInt(j.data.startDate.split(' ').pop() ?? '0')))
+const years = new Date().getFullYear() - firstYear
+
+const NAV = [
+  { id: 'about', label: 'About' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'certifications', label: 'Certifications' },
+  { id: 'education', label: 'Education' },
+]
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{person.name} — {person.title}</title>
+    <meta name="description" content={person.summary} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
+    <style is:inline>
+      :root {
+        --bg:      #F5F6F8;
+        --ink:     #14171C;
+        --ink-2:   #464C56;
+        --ink-3:   #7A828E;
+        --rule:    #E1E4E9;
+        --card:    #FFFFFF;
+        --accent:  #0B5CAD;
+        --accent-soft: #E8F0FA;
+        --ok:      #1F8A4C;
+        --display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+        --body:    'Instrument Sans', system-ui, -apple-system, sans-serif;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+      body { background: var(--bg); color: var(--ink-2); font-family: var(--body); font-size: 15.5px; line-height: 1.6; }
+      a { color: inherit; text-decoration: none; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+      ::selection { background: var(--accent-soft); }
+
+      /* ── Frame ─────────────────────────────────── */
+      .page { max-width: 1120px; margin: 0 auto; padding: 0 40px; display: grid; grid-template-columns: 330px 1fr; gap: 96px; }
+
+      /* ── Identity column (sticky) ───────────────── */
+      .id { position: sticky; top: 0; height: 100vh; padding: 88px 0 56px; display: flex; flex-direction: column; }
+      .id-name { font-family: var(--display); font-variation-settings: 'opsz' 48, 'wdth' 94; font-weight: 700; font-size: 40px; line-height: 1; letter-spacing: -0.025em; color: var(--ink); }
+      .id-title { margin-top: 12px; font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+      .id-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+      .id-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px #DDF1E4; }
+      .id-pitch { margin-top: 22px; font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 300px; }
+
+      .id-nav { margin-top: 44px; list-style: none; }
+      .id-nav a { display: flex; align-items: center; gap: 12px; padding: 7px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); transition: color 0.2s; }
+      .id-nav a::before { content: ''; width: 28px; height: 1px; background: var(--ink-3); transition: width 0.25s, background 0.2s; }
+      .id-nav a:hover, .id-nav a.active { color: var(--ink); }
+      .id-nav a:hover::before, .id-nav a.active::before { width: 56px; background: var(--ink); }
+
+      .id-foot { margin-top: auto; padding-top: 32px; }
+      .id-contact { list-style: none; font-size: 14px; line-height: 1.9; color: var(--ink-2); }
+      .id-contact a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+      .id-contact .muted { color: var(--ink-3); }
+      .download-btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; padding: 11px 18px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 600; border-radius: 6px; transition: background 0.2s, transform 0.2s; }
+      .download-btn:hover { background: var(--accent); transform: translateY(-1px); }
+      .download-btn svg { width: 15px; height: 15px; }
+
+      /* ── Content column ─────────────────────────── */
+      .content { padding: 88px 0 96px; }
+      .section { padding-bottom: 88px; scroll-margin-top: 0; }
+      .section:last-child { padding-bottom: 0; }
+      .section-h { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); }
+
+      .about p { font-size: 16.5px; line-height: 1.65; margin-top: 16px; }
+      .about .facts { display: flex; gap: 40px; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--rule); }
+      .fact b { display: block; font-family: var(--display); font-variation-settings: 'opsz' 48; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
+      .fact span { display: block; margin-top: 6px; font-size: 12.5px; color: var(--ink-3); letter-spacing: 0.02em; }
+
+      /* Entry: date rail on the left, substance on the right */
+      .entry { position: relative; display: grid; grid-template-columns: 132px 1fr; gap: 24px; padding: 22px 20px; margin: 0 -20px; border-radius: 8px; transition: background 0.25s, box-shadow 0.25s; }
+      .entry:hover { background: var(--card); box-shadow: 0 1px 2px rgba(20,23,28,0.04), 0 12px 32px -12px rgba(20,23,28,0.14); }
+      .entry-when { padding-right: 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); padding-top: 4px; font-variant-numeric: tabular-nums; }
+      .entry-when small { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+      .entry-title { font-size: 16.5px; font-weight: 700; color: var(--ink); line-height: 1.35; }
+      .entry-sub { font-size: 14.5px; color: var(--ink-2); margin-top: 2px; }
+      .entry-sub .loc { color: var(--ink-3); }
+      .entry ul { list-style: none; margin-top: 12px; }
+      .entry li { position: relative; padding-left: 18px; font-size: 14.5px; line-height: 1.55; margin-bottom: 6px; }
+      .entry li::before { content: ''; position: absolute; left: 0; top: 0.75em; width: 8px; height: 1.5px; background: var(--ink-3); }
+      .entry p { margin-top: 8px; font-size: 14.5px; line-height: 1.55; }
+      .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+      .tags span { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; }
+
+      /* Timeline rail behind the date column */
+      .timeline { position: relative; }
+      .timeline::before { content: ''; position: absolute; left: 144px; top: 30px; bottom: 30px; width: 1px; background: var(--rule); }
+      .timeline .entry::after { content: ''; position: absolute; left: 140px; top: 29px; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ink-3); transition: border-color 0.25s, background 0.25s; }
+      .timeline .entry:hover::after { border-color: var(--accent); background: var(--accent); }
+      .timeline .entry:first-child::after { border-color: var(--ok); background: var(--ok); }
+
+      /* Skills */
+      .skill-row { display: grid; grid-template-columns: 132px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+      .skill-row:last-child { border-bottom: 0; }
+      .skill-row b { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); padding-top: 5px; }
+      .skill-row .tags { margin-top: 0; }
+      .skill-row .tags span { color: var(--ink-2); background: var(--card); border: 1px solid var(--rule); }
+
+      /* Certifications */
+      .cert-group { margin-top: 18px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+      .certs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; margin-top: 2px; }
+      .cert { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--rule); font-size: 14.5px; color: var(--ink); }
+      .cert svg { flex: none; width: 16px; height: 16px; margin-top: 3px; color: var(--accent); }
+      .cert.other { color: var(--ink-2); }
+      .cert.other svg { color: var(--ink-3); }
+
+      /* Education */
+      .edu { display: grid; grid-template-columns: 132px 1fr; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+      .edu:last-of-type { border-bottom: 0; }
+      .edu span { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); padding-top: 3px; font-variant-numeric: tabular-nums; }
+      .edu b { display: block; font-size: 16px; font-weight: 700; color: var(--ink); }
+      .edu em { font-style: normal; font-size: 14.5px; color: var(--ink-2); }
+      .interests { margin-top: 32px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--ink-3); line-height: 1.6; }
+
+      /* Reveal */
+      .section { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+      .section.in { opacity: 1; transform: none; }
+      @media (prefers-reduced-motion: reduce) { .section { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+
+      /* ── Responsive ─────────────────────────────── */
+      @media (max-width: 960px) {
+        .page { grid-template-columns: 1fr; gap: 0; padding: 0 28px; }
+        .id { position: static; height: auto; padding: 56px 0 8px; }
+        .id-nav { display: none; }
+        .id-foot { margin-top: 28px; padding-top: 0; }
+        .content { padding: 40px 0 72px; }
+        .section { padding-bottom: 64px; }
+      }
+      @media (max-width: 600px) {
+        body { font-size: 15px; }
+        .page { padding: 0 20px; }
+        .id-name { font-size: 34px; }
+        .entry, .skill-row, .edu { grid-template-columns: 1fr; gap: 6px; }
+        .entry { padding: 18px 14px; margin: 0 -14px; }
+        .timeline::before, .timeline .entry::after { display: none; }
+        .certs { grid-template-columns: 1fr; }
+        .about .facts { gap: 24px; flex-wrap: wrap; }
+      }
+
+      /* ── Print / PDF: the web layout translated to A4 ── */
+      .print-doc { display: none; }
+      @media print {
+        @page { size: A4; margin: 9.5mm 13mm 10mm; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        html { font-size: 9.2pt; }
+        body { background: #fff; color: #333; font-family: var(--body); line-height: 1.34; padding: 0; min-height: 0; }
+        .page, .download-btn { display: none !important; }
+        .print-doc { display: block; }
+
+        .pd-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16pt; padding-bottom: 9pt; border-bottom: 1.2pt solid #14171C; }
+        .pd-name { font-family: var(--display); font-variation-settings: 'opsz' 48, 'wdth' 94; font-weight: 700; font-size: 23pt; letter-spacing: -0.025em; color: #14171C; line-height: 1; }
+        .pd-role { font-size: 10.5pt; font-weight: 600; color: #14171C; margin-top: 5pt; }
+        .pd-status { display: inline-flex; align-items: center; gap: 5pt; margin-top: 5pt; font-size: 8.25pt; color: #464C56; }
+        .pd-status::before { content: ''; width: 5pt; height: 5pt; border-radius: 50%; background: #1F8A4C; }
+        .pd-contact { text-align: right; font-size: 8.5pt; line-height: 1.6; color: #464C56; white-space: nowrap; padding-top: 2pt; }
+        .pd-contact .sep { color: #B8C7DA; margin: 0 4pt; }
+        .pd-contact a { color: #14171C; }
+        .pd-contact .muted { color: #7A828E; }
+
+        .pd-section { margin-top: 8pt; break-inside: auto; }
+        .pd-h { font-size: 8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #14171C;
+                padding-bottom: 3.5pt; border-bottom: 0.6pt solid #D7DBE0; margin-bottom: 6pt; break-after: avoid; }
+        .pd-profile { font-size: 9.3pt; line-height: 1.42; color: #333; }
+        .pd-facts { display: flex; gap: 22pt; margin-top: 6pt; }
+        .pd-facts div { font-size: 8.25pt; color: #7A828E; }
+        .pd-facts b { font-family: var(--display); font-size: 12.5pt; font-weight: 700; color: #14171C; letter-spacing: -0.02em; margin-right: 4pt; font-variant-numeric: tabular-nums; }
+
+        /* Entry: date column | content, with the timeline rail in the gutter */
+        .pd-entry { display: block; position: relative; padding: 3.5pt 0 4pt; break-inside: auto; }
+        .pd-entry + .pd-entry { border-top: 0.5pt solid #EEF0F2; }
+        .pd-when { position: absolute; left: 0; top: 3.5pt; width: 78pt; font-size: 7.75pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7A828E; padding-top: 1.5pt; font-variant-numeric: tabular-nums; }
+        .pd-when small { display: block; margin-top: 1.5pt; font-size: 7.5pt; font-weight: 400; letter-spacing: 0; text-transform: none; }
+        .pd-body { position: relative; margin-left: 92pt; padding-left: 10pt; border-left: 0.6pt solid #D7DBE0; }
+        .pd-body::before { content: ''; position: absolute; left: -3.3pt; top: 3pt; width: 6pt; height: 6pt; border-radius: 50%; background: #fff; border: 1.2pt solid #7A828E; }
+        .pd-entry.now .pd-body::before { background: #1F8A4C; border-color: #1F8A4C; }
+        .pd-title { font-size: 10pt; font-weight: 700; color: #14171C; line-height: 1.3; }
+        .pd-sub { font-size: 8.75pt; color: #464C56; margin-top: 0.5pt; break-after: avoid; }
+        .pd-sub .loc { color: #7A828E; }
+        .pd-body ul { list-style: none; margin-top: 3pt; }
+        .pd-body li { break-inside: avoid; position: relative; padding-left: 9pt; font-size: 8.7pt; line-height: 1.3; margin-bottom: 0.8pt; color: #333; }
+        .pd-body li::before { content: ''; position: absolute; left: 0; top: 0.68em; width: 5pt; height: 0.9pt; background: #7A828E; }
+        .pd-body p { font-size: 8.9pt; line-height: 1.36; margin-top: 2pt; color: #333; }
+        .pd-tags { margin-top: 2.5pt; font-size: 7.75pt; font-weight: 600; color: #0B5CAD; }
+        .pd-tags span + span::before { content: '  ·  '; color: #B8C7DA; font-weight: 400; }
+        .pd-projs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18pt; row-gap: 3pt; }
+        .pd-proj { break-inside: avoid; display: block; padding: 0; border-top: 0 !important; }
+        .pd-proj:last-child:nth-child(odd) { grid-column: 1 / -1; }
+        .pd-proj .pd-when { position: static; width: auto; margin-bottom: 1pt; }
+        .pd-proj .pd-when small { display: inline; margin-left: 4pt; }
+        .pd-proj .pd-body { margin-left: 0; padding-left: 0; border-left: 0; }
+        .pd-proj .pd-body::before { display: none; }
+        .pd-proj .pd-title { font-size: 9.4pt; }
+        .pd-proj .pd-body p { font-size: 8.3pt; line-height: 1.3; margin-top: 1pt; }
+        .pd-proj .pd-tags { margin-top: 1.5pt; font-size: 7.4pt; }
+
+        .pd-two { display: grid; grid-template-columns: 1.25fr 1fr 1fr; column-gap: 18pt; break-inside: avoid; }
+        .pd-two .pd-skill { grid-template-columns: 1fr; row-gap: 1pt; }
+        .pd-inline { font-size: 8.6pt; color: #14171C; line-height: 1.45; }
+        .pd-inline.other { color: #464C56; }
+        .pd-inline span + span::before { content: '  ·  '; color: #B8C7DA; }
+        .pd-skill { display: grid; grid-template-columns: 62pt 1fr; column-gap: 10pt; padding: 3pt 0; border-bottom: 0.5pt solid #EEF0F2; font-size: 8.75pt; color: #333; line-height: 1.4; }
+        .pd-skill:last-child { border-bottom: 0; }
+        .pd-skill b { font-size: 7.75pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7A828E; padding-top: 1pt; }
+        .pd-group { margin-top: 4pt; font-size: 7.5pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7A828E; }
+        .pd-list { list-style: none; }
+        .pd-list li { display: flex; align-items: baseline; gap: 5pt; font-size: 8.75pt; color: #14171C; padding: 1.6pt 0; }
+        .pd-list li::before { content: ''; width: 4pt; height: 4pt; border-radius: 50%; background: #0B5CAD; flex: none; position: relative; top: -1pt; }
+        .pd-list li.other { color: #464C56; }
+        .pd-list li.other::before { background: #B8C7DA; }
+        .pd-edu { display: grid; grid-template-columns: 30pt 1fr; column-gap: 6pt; padding: 2pt 0; font-size: 8.5pt; }
+        .pd-edu span { font-size: 7.75pt; font-weight: 600; letter-spacing: 0.06em; color: #7A828E; padding-top: 1pt; font-variant-numeric: tabular-nums; }
+        .pd-edu b { display: block; font-weight: 700; color: #14171C; }
+        .pd-edu em { font-style: normal; color: #464C56; }
+        .pd-foot { margin-top: 4pt; padding-top: 4pt; border-top: 0.5pt solid #EEF0F2; font-size: 7.6pt; color: #7A828E; line-height: 1.45; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="id">
+        <h1 class="id-name">{person.name}</h1>
+        <p class="id-title">{person.title}</p>
+        <p class="id-status">Available for new engagements · remote, IST</p>
+        <p class="id-pitch">Freelance architect who still writes the code. Clients bring me a Salesforce org that has outgrown its build, a product that needs a Heroku backend, or a greenfield platform that needs its first design. I scope it, build it with a small team, and hand it over documented.</p>
+
+        <nav aria-label="Sections">
+          <ul class="id-nav">
+            {NAV.map(n => <li><a href={`#${n.id}`} data-nav={n.id}>{n.label}</a></li>)}
+          </ul>
+        </nav>
+
+        <div class="id-foot">
+          <ul class="id-contact">
+            <li><a href={`mailto:${person.email}`}>{person.email}</a></li>
+            <li><a href={`tel:${person.phone.replace(/\s+/g, '')}`}>{person.phone}</a></li>
+            <li><a href={person.linkedinUrl} target="_blank" rel="noopener">{person.linkedin}</a></li>
+            <li><a href={person.githubUrl} target="_blank" rel="noopener">{person.github}</a></li>
+            <li class="muted">{person.location}</li>
+          </ul>
+          <a class="download-btn" href="./resume.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3"/></svg>
+            Download PDF résumé
+          </a>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section id="about" class="section about">
+          <h2 class="section-h">About</h2>
+          <p>{person.summary}</p>
+          <div class="facts">
+            <div class="fact"><b>{years}+</b><span>years in software</span></div>
+            <div class="fact"><b>70+</b><span>projects delivered</span></div>
+            <div class="fact"><b>{sfCerts.length}</b><span>Salesforce certifications</span></div>
+          </div>
+        </section>
+
+        <section id="experience" class="section">
+          <h2 class="section-h">Experience</h2>
+          <div class="timeline">
+            {experience.map(job => (
+              <article class="entry">
+                <div class="entry-when">{yearsOf(job.data)}<small>{job.data.startDate} – {job.data.endDate}</small></div>
+                <div>
+                  <h3 class="entry-title">{job.data.title}</h3>
+                  <p class="entry-sub">{job.data.company}{job.data.location && <span class="loc"> · {job.data.location}</span>}</p>
+                  <ul>{parseBullets(job.body).map(b => <li>{b}</li>)}</ul>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="projects" class="section">
+          <h2 class="section-h">Selected projects</h2>
+          {projects.map(p => (
+            <article class="entry">
+              <div class="entry-when">{clientOf(p.data.client)[0]}{clientOf(p.data.client)[1] && <small>via {clientOf(p.data.client)[1]}</small>}</div>
+              <div>
+                <h3 class="entry-title">{p.data.name}</h3>
+                <p>{p.body.trim()}</p>
+                <div class="tags">{p.data.tech.map((t: string) => <span>{t}</span>)}</div>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section id="skills" class="section">
+          <h2 class="section-h">Technical skills</h2>
+          {skills.map(g => (
+            <div class="skill-row">
+              <b>{g.label}</b>
+              <div class="tags">{g.items.map(i => <span>{i}</span>)}</div>
+            </div>
+          ))}
+        </section>
+
+        <section id="certifications" class="section">
+          <h2 class="section-h">Certifications</h2>
+          <p class="cert-group">Salesforce Certified</p>
+          <div class="certs">
+            {sfCerts.map(c => (
+              <div class="cert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/></svg>{c.replace('Salesforce Certified ', '')}</div>
+            ))}
+          </div>
+          <p class="cert-group">Other</p>
+          <div class="certs">
+            {otherCerts.map(c => (
+              <div class="cert other"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/></svg>{c}</div>
+            ))}
+          </div>
+        </section>
+
+        <section id="education" class="section">
+          <h2 class="section-h">Education</h2>
+          {education.map(e => (
+            <div class="edu"><span>{e.year}</span><div><b>{e.degree}</b><em>{e.institution}</em></div></div>
+          ))}
+          <p class="interests">{hobbies}</p>
+        </section>
+      </main>
+    </div>
+
+    <div class="print-doc" aria-hidden="true">
+      <header class="pd-head">
+        <div>
+          <div class="pd-name">{person.name}</div>
+          <div class="pd-role">{person.title}</div>
+          <div class="pd-status">Available for new engagements · remote, IST (UTC+5:30)</div>
+        </div>
+        <div class="pd-contact">
+          <a href={`mailto:${person.email}`}>{person.email}</a><span class="sep">·</span>{person.phone}<br />
+          <a href={person.linkedinUrl}>{person.linkedin}</a><span class="sep">·</span><a href={person.githubUrl}>{person.github}</a><br />
+          <span class="muted">{person.location}</span>
+        </div>
+      </header>
+
+      <section class="pd-section">
+        <div class="pd-h">About</div>
+        <p class="pd-profile">{person.summary}</p>
+        <div class="pd-facts">
+          <div><b>{years}+</b>years in software</div>
+          <div><b>70+</b>projects delivered</div>
+          <div><b>{sfCerts.length}</b>Salesforce certifications</div>
+        </div>
+      </section>
+
+      <section class="pd-section">
+        <div class="pd-h">Experience</div>
+        {experience.map(job => (
+          <div class={`pd-entry${job.data.endDate === 'Present' ? ' now' : ''}`}>
+            <div class="pd-when">{yearsOf(job.data)}<small>{job.data.startDate} – {job.data.endDate}</small></div>
+            <div class="pd-body">
+              <div class="pd-title">{job.data.title}</div>
+              <div class="pd-sub">{job.data.company}{job.data.location && <span class="loc"> · {job.data.location}</span>}</div>
+              <ul>{parseBullets(job.body).map(b => <li>{b}</li>)}</ul>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <section class="pd-section">
+        <div class="pd-h">Selected projects</div>
+        <div class="pd-projs">
+        {projects.map(p => (
+          <div class="pd-entry pd-proj">
+            <div class="pd-when">{clientOf(p.data.client)[0]}{clientOf(p.data.client)[1] && <small>via {clientOf(p.data.client)[1]}</small>}</div>
+            <div class="pd-body">
+              <div class="pd-title">{p.data.name}</div>
+              <p>{p.body.trim()}</p>
+              <div class="pd-tags">{p.data.tech.map((t: string) => <span>{t}</span>)}</div>
+            </div>
+          </div>
+        ))}
+        </div>
+      </section>
+
+      <div class="pd-two pd-section">
+        <section>
+          <div class="pd-h">Technical skills</div>
+          {skills.map(g => <div class="pd-skill"><b>{g.label}</b><div>{g.items.join(', ')}</div></div>)}
+        </section>
+        <section>
+          <div class="pd-h">Certifications</div>
+          <div class="pd-group">Salesforce Certified</div>
+          <p class="pd-inline">{sfCerts.map(c => <span>{c.replace('Salesforce Certified ', '')}</span>)}</p>
+          <div class="pd-group">Other</div>
+          <p class="pd-inline other">{otherCerts.map(c => <span>{c}</span>)}</p>
+        </section>
+        <section>
+          <div class="pd-h">Education</div>
+          {education.map(e => <div class="pd-edu"><span>{e.year}</span><div><b>{e.degree}</b><em>{e.institution}</em></div></div>)}
+          <p class="pd-foot">{hobbies}</p>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const sections = [...document.querySelectorAll('.section')]
+      const links = [...document.querySelectorAll('[data-nav]')]
+
+      const reveal = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); reveal.unobserve(e.target) } })
+      }, { threshold: 0.08 })
+      sections.forEach(s => reveal.observe(s))
+
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return
+          links.forEach(l => l.classList.toggle('active', l.dataset.nav === e.target.id))
+        })
+      }, { rootMargin: '-30% 0px -60% 0px' })
+      sections.forEach(s => spy.observe(s))
+    </script>
+  </body>
+</html>

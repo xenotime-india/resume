@@ -28,7 +28,7 @@ jobs:
         run: npm run build:all-themes
         env:
           # Set ACTIVE_THEME in: GitHub repo → Settings → Variables → Actions
-          # Leave unset to use the default theme (cloudalgo)
+          # Leave unset to use the default theme (architect)
           ACTIVE_THEME: ${{ vars.ACTIVE_THEME }}
 
       - name: Deploy to GitHub Pages

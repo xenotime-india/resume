@@ -1,5 +1,6 @@
 ---
 import { ACTIVE_THEME, type Theme } from '../config'
+import Architect from './themes/Architect.astro'
 import Editorial from './themes/Editorial.astro'
 import Brutalist from './themes/Brutalist.astro'
 import Luxury from './themes/Luxury.astro'
@@ -34,6 +35,9 @@ const { person, experience, projects, skills, education, certifications, hobbies
 const theme: Theme = ACTIVE_THEME
 ---
 
+{theme === 'architect' && (
+  <Architect person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
+)}
 {theme === 'editorial' && (
   <Editorial person={person} experience={experience} projects={projects} skills={skills} education={education} certifications={certifications} hobbies={hobbies} />
 )}

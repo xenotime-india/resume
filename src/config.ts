@@ -1,13 +1,13 @@
 // Local dev: change the fallback string below to switch themes.
 // CI/CD:     set ACTIVE_THEME in GitHub repo Settings → Variables → Actions.
-const VALID_THEMES = ['editorial','brutalist','luxury','cloudalgo','noir','blueprint','broadsheet','executive'] as const
+const VALID_THEMES = ['architect','editorial','brutalist','luxury','cloudalgo','noir','blueprint','broadsheet','executive'] as const
 export type Theme = typeof VALID_THEMES[number]
 
 const envTheme = import.meta.env.ACTIVE_THEME as string | undefined
 export const ACTIVE_THEME: Theme =
   (VALID_THEMES as readonly string[]).includes(envTheme ?? '')
     ? (envTheme as Theme)
-    : 'cloudalgo' // ← default theme
+    : 'architect' // ← default theme
 
 export const PERSON = {
   name: 'Sandeep Kumar',
@@ -20,7 +20,7 @@ export const PERSON = {
   github: 'github.com/xenotime-india',
   githubUrl: 'https://github.com/xenotime-india',
   summary:
-    '15+ years building enterprise software, with the last decade specialising in Salesforce architecture and full-stack development. Co-founder of CloudAlgo, delivering 70+ projects across Salesforce, Heroku, React, and Node.js for global clients. Experienced across the full spectrum — from greenfield platform builds to complex enterprise migrations.',
+    'Salesforce and Heroku architect with 16+ years of enterprise delivery and a decade on the Salesforce platform. Co-founder of CloudAlgo, where I have scoped, architected and shipped 70+ projects for clients in pharma, retail, recreation and enterprise software. I take an engagement from a rough brief to a running system: data model, integrations, Lightning UI, Heroku services, CI/CD, and the code review that keeps it maintainable after I hand it over.',
 } as const
 
 export const CERTIFICATIONS = [
@@ -37,4 +37,4 @@ export const CERTIFICATIONS = [
 ] as const
 
 export const HOBBIES =
-  'Passionate about expanding computer science knowledge and staying ahead of industry trends. Outside of work: tabletop gaming, video games, and travel.'
+  'I keep current by reading platform release notes and building small things with new tooling before a client needs it. Off the keyboard: tabletop gaming, video games and travel.'

@@ -6,7 +6,7 @@ endDate: "Dec 2013"
 location: "Jaipur, India"
 order: 4
 ---
-- Built Aegerion Pharmaceuticals patient portal on Salesforce — external community users tracking LDL-C levels and dietary plans, responsive across mobile and desktop
-- Implemented Experian Service Cloud with web-to-case, email-to-case, case assignment and escalation rules, and Knowledge One
-- Delivered Teva Pharmaceutical social intranet (Edgeforce) — 40,000+ employees collaborating and accessing documents across mobile, iPad, and desktop
-- Built Logitech B:C Service Cloud case management system with Customer Community, accessible on iPad, desktop, and iPhone
+- Built the Aegerion Pharmaceuticals patient portal on Salesforce Communities, where external patients track LDL-C levels and dietary plans in a responsive UI on phone and desktop
+- Implemented Experian's Service Cloud: web-to-case and email-to-case, assignment and escalation rules, and Knowledge One so agents resolve cases from one console
+- Delivered Edgeforce, Teva Pharmaceutical's social intranet, giving 40,000+ employees document access and collaboration on mobile, iPad and desktop
+- Built Logitech's B:C Service Cloud case management system with a Customer Community, working consistently across iPad, desktop and iPhone

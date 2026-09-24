@@ -4,4 +4,4 @@ client: "Eli Lilly (via Appirio)"
 tech: ["Node.js", "React.js", "Contentful", "Kaltura REST API", "Heroku"]
 order: 3
 ---
-Consolidated 80+ disparate employee portals into a single unified intranet serving 40,000 employees across 120 countries. Built on Node.js and React.js with Contentful for content management and Kaltura for video delivery, deployed on Heroku.
+Eli Lilly's employee intranet, rebuilt to replace 80+ separate portals with one platform for 40,000 employees across 120 countries. Node.js and React on Heroku, Contentful for editorial content, Kaltura for video. Editors publish once; employees get one search, one navigation and one login.

@@ -29,3 +29,20 @@ pnpm-debug.log*
 # playwright / dev screenshots
 .playwright-mcp/
 *.png
+
+# editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# salesforce cli
+.sf/
+.sfdx/
+
+# stray tooling folders (only contain node_modules / generated files)
+studio/
+web/
+
+# generated PDFs & test output
+*.pdf
+test-results/

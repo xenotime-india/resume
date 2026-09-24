@@ -19,8 +19,8 @@ import { copyFileSync, mkdirSync, rmSync,
          existsSync, statSync }                  from 'node:fs'
 import { resolve }                               from 'node:path'
 
-const THEMES      = ['editorial', 'brutalist', 'luxury', 'cloudalgo', 'noir', 'blueprint', 'broadsheet', 'executive']
-const activeTheme = process.env.ACTIVE_THEME ?? 'cloudalgo'
+const THEMES      = ['architect', 'editorial', 'brutalist', 'luxury', 'cloudalgo', 'noir', 'blueprint', 'broadsheet', 'executive']
+const activeTheme = process.env.ACTIVE_THEME ?? 'architect'
 const tempDir     = resolve('./dist-pdfs-temp')
 
 /** Spawn a command safely — args are an array, no shell interpolation. */

@@ -10,7 +10,8 @@ Static resume site built with Astro, deployed to GitHub Pages.
 
 | Theme | Style | PDF |
 |---|---|---|
-| CloudAlgo *(active)* | Minimal monochrome, timeline | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
+| Architect *(active)* | Two-column résumé: sticky identity panel, timeline rail | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
+| Architect | Two-column résumé: sticky identity panel, timeline rail | [resume-architect.pdf](https://xenotime-india.github.io/resume/resume-architect.pdf) |
 | CloudAlgo | Minimal monochrome, timeline | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
 | Editorial | Luxury editorial, cream + gold | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
 | Brutalist | Swiss grid, yellow + black | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
@@ -24,13 +25,13 @@ Static resume site built with Astro, deployed to GitHub Pages.
 
 ## Themes
 
-8 themes available. Switch by setting `ACTIVE_THEME` — three ways:
+9 themes available. Switch by setting `ACTIVE_THEME` — three ways:
 
 **1. Local default** — edit `src/config.ts`:
 ```ts
 // change the fallback value
 export const ACTIVE_THEME: Theme =
-  (VALID_THEMES.includes(envTheme ?? '')) ? envTheme : 'cloudalgo'
+  (VALID_THEMES.includes(envTheme ?? '')) ? envTheme : 'architect'
 ```
 
 **2. Local env var** — no file changes needed:
@@ -44,6 +45,7 @@ ACTIVE_THEME=noir npm run build:all
 
 | Theme | Style | Fonts |
 |---|---|---|
+| `architect` | Two-column résumé: sticky identity panel, timeline rail, section nav. Cool grey, deep blue accent | Bricolage Grotesque + Instrument Sans |
 | `cloudalgo` | Minimal monochrome, timeline layout | Outfit 900 |
 | `editorial` | Luxury editorial, cream + gold | Cormorant Garamond + JetBrains Mono |
 | `brutalist` | Swiss grid, yellow + black | Bebas Neue + Space Mono |
