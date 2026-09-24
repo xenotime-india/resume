@@ -28,7 +28,7 @@ const MIME = {
 
 const server = createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url?.split('?')[0] ?? '/')
-  const stripped = urlPath.replace(/^\/resume\/?/, '') || 'index.html'
+  const stripped = urlPath.replace(/^\/(resume\/?)?/, '') || 'index.html'
   let filePath = resolve(distPath, stripped)
   if (!existsSync(filePath) || filePath.endsWith('/')) {
     filePath = resolve(distPath, stripped, 'index.html')
