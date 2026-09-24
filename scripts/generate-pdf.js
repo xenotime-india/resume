@@ -18,6 +18,7 @@ const MIME = {
   '.js': 'application/javascript',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.webp': 'image/webp',
   '.jpg': 'image/jpeg',
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
