@@ -2,7 +2,7 @@
  * Generates dist/resume.pdf using Puppeteer (headless Chrome).
  * Run after `astro build`: node scripts/generate-pdf.js
  *
- * Uses a local HTTP server so base-path asset references (/resume/...) resolve correctly.
+ * Uses a local HTTP server so absolute asset references resolve correctly.
  */
 
 import puppeteer from 'puppeteer'
@@ -57,7 +57,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage()
 await page.setViewport({ width: 1200, height: 900 })
 
-await page.goto(`http://localhost:${PORT}/resume/`, {
+await page.goto(`http://localhost:${PORT}/`, {
   waitUntil: 'networkidle0',
   timeout: 30_000,
 })

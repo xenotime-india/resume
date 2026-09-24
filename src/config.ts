@@ -32,7 +32,7 @@ export const PERSON = {
   seoDescription:
     'Freelance Salesforce and Heroku architect, CloudAlgo co-founder. 16+ years, 70+ projects: Salesforce, MuleSoft and API integrations, Airflow, AWS. Remote-first.',
   ogImage: 'og.png',
-  siteUrl: 'https://xenotime-india.github.io/resume/',
+  siteUrl: 'https://xenotime-india.github.io/',
 } as const
 
 /* What clients hire me for — problem first, then what they get */

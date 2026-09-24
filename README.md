@@ -2,7 +2,7 @@
 
 Static resume site built with Astro, deployed to GitHub Pages.
 
-🌐 **Live:** https://xenotime-india.github.io/resume/
+🌐 **Live:** https://xenotime-india.github.io/
 
 ---
 
@@ -10,16 +10,16 @@ Static resume site built with Astro, deployed to GitHub Pages.
 
 | Theme | Style | PDF |
 |---|---|---|
-| Architect *(active)* | Two-column résumé: sticky identity panel, timeline rail | [resume.pdf](https://xenotime-india.github.io/resume/resume.pdf) |
-| Architect | Two-column résumé: sticky identity panel, timeline rail | [resume-architect.pdf](https://xenotime-india.github.io/resume/resume-architect.pdf) |
-| CloudAlgo | Minimal monochrome, timeline | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume/resume-cloudalgo.pdf) |
-| Editorial | Luxury editorial, cream + gold | [resume-editorial.pdf](https://xenotime-india.github.io/resume/resume-editorial.pdf) |
-| Brutalist | Swiss grid, yellow + black | [resume-brutalist.pdf](https://xenotime-india.github.io/resume/resume-brutalist.pdf) |
-| Luxury | Warm organic, cream + terracotta | [resume-luxury.pdf](https://xenotime-india.github.io/resume/resume-luxury.pdf) |
-| Noir | Dark cinematic, gold on near-black | [resume-noir.pdf](https://xenotime-india.github.io/resume/resume-noir.pdf) |
-| Blueprint | Technical / architectural, navy | [resume-blueprint.pdf](https://xenotime-india.github.io/resume/resume-blueprint.pdf) |
-| Broadsheet | Newspaper front page, newsprint | [resume-broadsheet.pdf](https://xenotime-india.github.io/resume/resume-broadsheet.pdf) |
-| Executive | Pure white professional, modern | [resume-executive.pdf](https://xenotime-india.github.io/resume/resume-executive.pdf) |
+| Architect *(active)* | Two-column résumé: sticky identity panel, timeline rail | [resume.pdf](https://xenotime-india.github.io/resume.pdf) |
+| Architect | Two-column résumé: sticky identity panel, timeline rail | [resume-architect.pdf](https://xenotime-india.github.io/resume-architect.pdf) |
+| CloudAlgo | Minimal monochrome, timeline | [resume-cloudalgo.pdf](https://xenotime-india.github.io/resume-cloudalgo.pdf) |
+| Editorial | Luxury editorial, cream + gold | [resume-editorial.pdf](https://xenotime-india.github.io/resume-editorial.pdf) |
+| Brutalist | Swiss grid, yellow + black | [resume-brutalist.pdf](https://xenotime-india.github.io/resume-brutalist.pdf) |
+| Luxury | Warm organic, cream + terracotta | [resume-luxury.pdf](https://xenotime-india.github.io/resume-luxury.pdf) |
+| Noir | Dark cinematic, gold on near-black | [resume-noir.pdf](https://xenotime-india.github.io/resume-noir.pdf) |
+| Blueprint | Technical / architectural, navy | [resume-blueprint.pdf](https://xenotime-india.github.io/resume-blueprint.pdf) |
+| Broadsheet | Newspaper front page, newsprint | [resume-broadsheet.pdf](https://xenotime-india.github.io/resume-broadsheet.pdf) |
+| Executive | Pure white professional, modern | [resume-executive.pdf](https://xenotime-india.github.io/resume-executive.pdf) |
 
 ---
 

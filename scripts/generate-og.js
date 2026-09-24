@@ -24,7 +24,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   <div class="role">Salesforce &amp; Heroku Architect · Co-founder, CloudAlgo</div>
   <div class="tags"><span>Salesforce</span><span>Heroku</span><span>MuleSoft</span><span>Airflow</span><span>AWS</span><span>Node.js · React</span></div>
 </div>
-<div class="foot"><div><b>16+ years</b> · <b>70+ projects</b> · <b>8</b> Salesforce certifications</div><div>xenotime-india.github.io/resume</div></div>
+<div class="foot"><div><b>16+ years</b> · <b>70+ projects</b> · <b>8</b> Salesforce certifications</div><div>xenotime-india.github.io</div></div>
 </div></body></html>`
 
 const browser = await puppeteer.launch({ headless: true })
