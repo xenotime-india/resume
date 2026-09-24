@@ -9,6 +9,57 @@ interface Props {
   hobbies: string
 }
 const { person, experience, projects, skills, education, certifications, hobbies } = Astro.props
+import { SERVICES, CLIENTS, PROCESS, ENGAGEMENT, RECENT_WORK, INDUSTRIES } from '../../config'
+const featuredProjects = projects.filter(p => p.data.featured !== false)
+const mailSubject = encodeURIComponent('Project enquiry')
+const mailBody = encodeURIComponent('Hi Sandeep,\n\nA few lines about what we are building and what is in the way:\n\n')
+const contactHref = `mailto:${person.email}?subject=${mailSubject}&body=${mailBody}`
+const ogImageUrl = new URL(person.ogImage ?? 'og.png', person.siteUrl).href
+const personId = person.siteUrl + '#person'
+const portraitUrl = `${import.meta.env.BASE_URL}/portrait.jpg`.replace('//', '/')
+const portraitAbs = new URL('portrait.jpg', person.siteUrl).href
+const ldJson = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ProfilePage',
+      '@id': person.siteUrl,
+      url: person.siteUrl,
+      name: person.seoTitle,
+      description: person.seoDescription,
+      inLanguage: 'en',
+      dateModified: new Date().toISOString().slice(0, 10),
+      mainEntity: { '@id': personId },
+      primaryImageOfPage: { '@type': 'ImageObject', url: ogImageUrl, width: 1200, height: 630 },
+    },
+    {
+      '@type': 'Person',
+      '@id': personId,
+      name: person.name,
+      givenName: person.name.split(' ')[0],
+      familyName: person.name.split(' ').slice(1).join(' '),
+      jobTitle: 'Salesforce & Heroku Architect',
+      description: person.summary,
+      image: portraitAbs,
+      email: `mailto:${person.email}`,
+      telephone: person.phone,
+      url: person.siteUrl,
+      sameAs: [person.linkedinUrl, person.githubUrl, person.companyUrl],
+      address: { '@type': 'PostalAddress', addressLocality: 'Jaipur', addressRegion: 'Rajasthan', addressCountry: 'IN' },
+      worksFor: { '@type': 'Organization', name: person.company ?? 'CloudAlgo', url: person.companyUrl },
+      alumniOf: [...new Set(education.map(e => e.institution))].map(name => ({ '@type': 'CollegeOrUniversity', name })),
+      hasCredential: certifications.map(name => ({ '@type': 'EducationalOccupationalCredential', name, credentialCategory: 'certification' })),
+      hasOccupation: {
+        '@type': 'Occupation',
+        name: 'Salesforce Architect',
+        occupationLocation: { '@type': 'Country', name: 'Remote' },
+        skills: skills.flatMap(g => g.items).join(', '),
+      },
+      knowsAbout: ['Salesforce', 'Heroku', 'MuleSoft', 'MuleSoft RPA', 'Apache Airflow', 'AWS', 'AWS Lambda', 'AWS Fargate', 'Amazon Cognito', 'Apex', 'Lightning Web Components', 'Node.js', 'React', 'React Native', 'Next.js', 'System integration', 'Non-profit Salesforce implementation', 'Healthcare Salesforce implementation'],
+      makesOffer: SERVICES.map(sv => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: sv.title, description: sv.outcome, provider: { '@type': 'Organization', name: 'CloudAlgo', url: person.companyUrl } } })),
+    },
+  ],
+})
 
 function parseBullets(body: string): string[] {
   return body.split('\n').map(l => l.replace(/^-\s+/, '').trim()).filter(Boolean)
@@ -45,11 +96,13 @@ const years = new Date().getFullYear() - firstYear
 
 const NAV = [
   { id: 'about', label: 'About' },
+  { id: 'services', label: 'What I do' },
   { id: 'experience', label: 'Experience' },
   { id: 'projects', label: 'Projects' },
   { id: 'skills', label: 'Skills' },
   { id: 'certifications', label: 'Certifications' },
   { id: 'education', label: 'Education' },
+  { id: 'contact', label: 'Work with me' },
 ]
 ---
 
@@ -58,8 +111,32 @@ const NAV = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{person.name} — {person.title}</title>
-    <meta name="description" content={person.summary} />
+    <title>{person.seoTitle ?? `${person.name} — ${person.title}`}</title>
+    <meta name="description" content={person.seoDescription ?? person.summary} />
+    <meta name="author" content={person.name} />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#14171C" />
+    <link rel="canonical" href={person.siteUrl} />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}/favicon.svg`.replace('//', '/')} type="image/svg+xml" />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}/sitemap.xml`.replace('//', '/')} />
+    <link rel="alternate" type="application/pdf" href={`${import.meta.env.BASE_URL}/resume.pdf`.replace('//', '/')} title="Sandeep Kumar CV (PDF)" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={`${person.name} — ${person.company ?? 'CloudAlgo'}`} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={person.seoTitle ?? person.name} />
+    <meta property="og:description" content={person.seoDescription ?? person.summary} />
+    <meta property="og:url" content={person.siteUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${person.name}, Salesforce & Heroku Architect, co-founder of CloudAlgo`} />
+    <meta property="profile:first_name" content={person.name.split(' ')[0]} />
+    <meta property="profile:last_name" content={person.name.split(' ').slice(1).join(' ')} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={person.seoTitle ?? person.name} />
+    <meta name="twitter:description" content={person.seoDescription ?? person.summary} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <script type="application/ld+json" set:html={ldJson} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
@@ -86,32 +163,47 @@ const NAV = [
       ::selection { background: var(--accent-soft); }
 
       /* ── Frame ─────────────────────────────────── */
-      .page { max-width: 1120px; margin: 0 auto; padding: 0 40px; display: grid; grid-template-columns: 330px 1fr; gap: 96px; }
+      .page { max-width: 1120px; margin: 0 auto; padding: 0 40px; display: grid; grid-template-columns: 330px 1fr; grid-template-areas: 'id head' 'id content'; column-gap: 96px; row-gap: 0; align-items: start; }
+      .masthead { grid-area: head; display: flex; align-items: center; gap: 28px; padding: 56px 0 40px; }
+      .masthead-text { min-width: 0; }
+      .masthead .id-name { font-size: 50px; }
+      .masthead .id-title { font-size: 18px; margin-top: 10px; }
+      .masthead .id-status { margin-top: 14px; }
 
       /* ── Identity column (sticky) ───────────────── */
-      .id { position: sticky; top: 0; height: 100vh; padding: 88px 0 56px; display: flex; flex-direction: column; }
+      .id { grid-area: id; position: sticky; top: 0; height: 100vh; padding: 64px 0 36px; display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: none; }
+      .id::-webkit-scrollbar { display: none; }
+      /* Portrait: grayscale at rest, colour on hover; availability dot sits on the rim like the timeline's "now" marker */
+      .id-photo { position: relative; width: 132px; height: 132px; border-radius: 50%; flex: none; }
+      .id-photo img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; filter: grayscale(1) contrast(1.05); transition: filter 0.45s ease, transform 0.45s ease; box-shadow: 0 0 0 1px var(--rule); }
+      .id-photo::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid var(--rule); transition: border-color 0.45s ease, transform 0.45s ease; }
+      .id-photo::after { content: ''; position: absolute; right: 8px; bottom: 8px; width: 16px; height: 16px; border-radius: 50%; background: var(--ok); border: 2.5px solid var(--bg); }
+      .id-photo:hover img, .id-photo:focus-within img { filter: none; transform: scale(1.03); }
+      .id-photo:hover::before { border-color: var(--accent); transform: scale(1.04); }
+      @media (hover: none) { .id-photo img { filter: none; } }
+      @media (prefers-reduced-motion: reduce) { .id-photo img, .id-photo::before { transition: none; transform: none !important; } }
       .id-name { font-family: var(--display); font-variation-settings: 'opsz' 48, 'wdth' 94; font-weight: 700; font-size: 40px; line-height: 1; letter-spacing: -0.025em; color: var(--ink); }
       .id-title { margin-top: 12px; font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.4; }
-      .id-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+      .id-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 0; font-size: 13px; font-weight: 500; color: var(--ink-2); }
       .id-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px #DDF1E4; }
-      .id-pitch { margin-top: 22px; font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: 300px; }
+      .id-pitch { margin-top: 0; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); max-width: 300px; }
 
-      .id-nav { margin-top: 44px; list-style: none; }
-      .id-nav a { display: flex; align-items: center; gap: 12px; padding: 7px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); transition: color 0.2s; }
+      .id-nav { margin-top: 30px; list-style: none; }
+      .id-nav a { display: flex; align-items: center; gap: 12px; padding: 4.5px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); transition: color 0.2s; }
       .id-nav a::before { content: ''; width: 28px; height: 1px; background: var(--ink-3); transition: width 0.25s, background 0.2s; }
       .id-nav a:hover, .id-nav a.active { color: var(--ink); }
       .id-nav a:hover::before, .id-nav a.active::before { width: 56px; background: var(--ink); }
 
-      .id-foot { margin-top: auto; padding-top: 32px; }
-      .id-contact { list-style: none; font-size: 14px; line-height: 1.9; color: var(--ink-2); }
+      .id-foot { margin-top: auto; padding-top: 18px; }
+      .id-contact { list-style: none; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
       .id-contact a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
       .id-contact .muted { color: var(--ink-3); }
-      .download-btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; padding: 11px 18px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 600; border-radius: 6px; transition: background 0.2s, transform 0.2s; }
+      .download-btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 18px; background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 600; border-radius: 6px; transition: background 0.2s, transform 0.2s; }
       .download-btn:hover { background: var(--accent); transform: translateY(-1px); }
       .download-btn svg { width: 15px; height: 15px; }
 
       /* ── Content column ─────────────────────────── */
-      .content { padding: 88px 0 96px; }
+      .content { grid-area: content; padding: 0 0 96px; }
       .section { padding-bottom: 88px; scroll-margin-top: 0; }
       .section:last-child { padding-bottom: 0; }
       .section-h { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid var(--rule); }
@@ -166,6 +258,66 @@ const NAV = [
       .edu em { font-style: normal; font-size: 14.5px; color: var(--ink-2); }
       .interests { margin-top: 32px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--ink-3); line-height: 1.6; }
 
+      /* Clients strip (About) */
+      .clients { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--rule); }
+      .clients b { display: block; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+      .clients ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 0; font-family: var(--display); font-variation-settings: 'opsz' 24, 'wdth' 92; font-weight: 600; font-size: 15px; color: var(--ink); }
+      .clients li + li::before { content: '·'; color: var(--rule); margin: 0 12px; font-weight: 400; }
+
+      /* Industries */
+      .industries { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 32px; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--rule); }
+      .industries b { display: block; font-size: 15px; font-weight: 700; color: var(--ink); }
+      .industries p { margin-top: 3px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+      .industries-h { grid-column: 1 / -1; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: -4px; }
+
+      /* Services (what I do) */
+      .services { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+      .service { background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 22px 20px; transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s; }
+      .service:hover { border-color: transparent; box-shadow: 0 1px 2px rgba(20,23,28,0.04), 0 14px 36px -14px rgba(20,23,28,0.18); transform: translateY(-2px); }
+      .service h3 { font-family: var(--display); font-variation-settings: 'opsz' 24, 'wdth' 94; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); line-height: 1.3; }
+      .service .problem { margin-top: 10px; font-size: 14px; line-height: 1.55; color: var(--ink-3); }
+      .service .outcome { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+      .service .outcome::before { content: 'You get'; display: block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+
+      /* Recent CloudAlgo work */
+      .recent-h { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 44px; }
+      .recent-h b { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+      .recent-h a { font-size: 13.5px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+      .recent-h a:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .recent { list-style: none; margin-top: 10px; }
+      .recent li { display: grid; grid-template-columns: 1fr 150px; gap: 20px; align-items: start; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+      .recent li:last-child { border-bottom: 0; }
+      .recent .who { font-size: 12.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); }
+      .recent .what { margin-top: 4px; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+      .recent .stack { margin-top: 5px; font-size: 12.5px; font-weight: 600; color: var(--accent); }
+      .recent .result { font-family: var(--display); font-variation-settings: 'opsz' 24, 'wdth' 94; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--ok); line-height: 1.25; text-align: right; }
+      .recent .result small { display: block; margin-top: 3px; font-family: var(--body); font-size: 11.5px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+
+      /* Process */
+      .process { counter-reset: step; list-style: none; margin-top: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+      .process li { counter-increment: step; position: relative; padding-top: 16px; border-top: 2px solid var(--ink); }
+      .process li::before { content: counter(step, decimal-leading-zero); font-family: var(--display); font-variation-settings: 'opsz' 24; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+      .process b { display: block; margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--ink); }
+      .process p { margin-top: 6px; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+      .process-h { margin-top: 44px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+
+      /* Work with me (CTA) */
+      .cta { background: var(--ink); color: #C9CED6; border-radius: 12px; padding: 40px 40px 36px; margin-top: 18px; }
+      .cta h3 { font-family: var(--display); font-variation-settings: 'opsz' 48, 'wdth' 94; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; color: #fff; max-width: 520px; }
+      .cta > p { margin-top: 14px; font-size: 15.5px; line-height: 1.6; max-width: 560px; }
+      .cta-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+      .cta-actions a { display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; transition: background 0.2s, color 0.2s, transform 0.2s; }
+      .cta-actions a:hover { transform: translateY(-1px); }
+      .cta-primary { background: #fff; color: var(--ink); }
+      .cta-primary:hover { background: var(--accent-soft); }
+      .cta-secondary { border: 1px solid #3A414B; color: #fff; }
+      .cta-secondary:hover { border-color: #fff; }
+      .engage { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; margin-top: 34px; padding-top: 28px; border-top: 1px solid #2A2F37; }
+      .engage b { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #8A919C; margin-bottom: 5px; }
+      .engage p { font-size: 14px; line-height: 1.55; color: #C9CED6; }
+      .id-pitch a { color: var(--accent); font-weight: 600; }
+      .id-pitch a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
       /* Reveal */
       .section { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
       .section.in { opacity: 1; transform: none; }
@@ -173,8 +325,12 @@ const NAV = [
 
       /* ── Responsive ─────────────────────────────── */
       @media (max-width: 960px) {
-        .page { grid-template-columns: 1fr; gap: 0; padding: 0 28px; }
-        .id { position: static; height: auto; padding: 56px 0 8px; }
+        .page { grid-template-columns: 1fr; grid-template-areas: 'head' 'id' 'content'; gap: 0; padding: 0 28px; }
+        .masthead { flex-direction: column; align-items: flex-start; gap: 18px; padding: 40px 0 0; }
+        .id-photo { width: 88px; height: 88px; }
+        .masthead .id-name { font-size: 40px; }
+        .masthead .id-title { font-size: 17px; }
+        .id { position: static; height: auto; padding: 20px 0 8px; overflow: visible; }
         .id-nav { display: none; }
         .id-foot { margin-top: 28px; padding-top: 0; }
         .content { padding: 40px 0 72px; }
@@ -183,44 +339,60 @@ const NAV = [
       @media (max-width: 600px) {
         body { font-size: 15px; }
         .page { padding: 0 20px; }
-        .id-name { font-size: 34px; }
+        .masthead .id-name { font-size: 34px; }
         .entry, .skill-row, .edu { grid-template-columns: 1fr; gap: 6px; }
         .entry { padding: 18px 14px; margin: 0 -14px; }
         .timeline::before, .timeline .entry::after { display: none; }
         .certs { grid-template-columns: 1fr; }
         .about .facts { gap: 24px; flex-wrap: wrap; }
+        .services, .engage, .industries { grid-template-columns: 1fr; }
+        .recent li { grid-template-columns: 1fr; gap: 8px; }
+        .recent .result { text-align: left; }
+        .cta { padding: 28px 22px; }
+        .cta h3 { font-size: 26px; }
+      }
+      @media (max-width: 960px) {
+        .process { grid-template-columns: 1fr 1fr; }
       }
 
       /* ── Print / PDF: the web layout translated to A4 ── */
       .print-doc { display: none; }
       @media print {
-        @page { size: A4; margin: 9.5mm 13mm 10mm; }
+        @page { size: A4; margin: 10mm 13mm 10mm; }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        html { font-size: 9.2pt; }
+        html { font-size: 9.25pt; }
         body { background: #fff; color: #333; font-family: var(--body); line-height: 1.34; padding: 0; min-height: 0; }
         .page, .download-btn { display: none !important; }
         .print-doc { display: block; }
 
-        .pd-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16pt; padding-bottom: 9pt; border-bottom: 1.2pt solid #14171C; }
+        .pd-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16pt; padding-bottom: 11pt; border-bottom: 1.2pt solid #14171C; }
+        .pd-id { display: flex; align-items: center; gap: 14pt; }
+        .pd-photo { width: 50pt; height: 50pt; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 1pt #D7DBE0; }
+        .pd-industries { display: grid; grid-template-columns: 1fr 1fr; gap: 3pt 18pt; margin-top: 8pt; padding-top: 7pt; border-top: 0.5pt solid #EEF0F2; }
+        .pd-industries div { font-size: 8.4pt; line-height: 1.38; color: #464C56; }
+        .pd-industries b { color: #14171C; font-weight: 700; }
+        .pd-clients { margin-top: 7pt; font-size: 8.2pt; line-height: 1.5; color: #464C56; }
+        .pd-clients b { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 7.4pt; color: #7A828E; margin-right: 6pt; }
+        .pd-clients span + span::before { content: '  ·  '; color: #B8C7DA; }
         .pd-name { font-family: var(--display); font-variation-settings: 'opsz' 48, 'wdth' 94; font-weight: 700; font-size: 23pt; letter-spacing: -0.025em; color: #14171C; line-height: 1; }
-        .pd-role { font-size: 10.5pt; font-weight: 600; color: #14171C; margin-top: 5pt; }
-        .pd-status { display: inline-flex; align-items: center; gap: 5pt; margin-top: 5pt; font-size: 8.25pt; color: #464C56; }
+        .pd-role { font-size: 10.5pt; font-weight: 600; color: #14171C; margin-top: 4pt; white-space: nowrap; }
+        .pd-status { display: inline-flex; align-items: center; gap: 5pt; margin-top: 4pt; font-size: 8.25pt; color: #464C56; white-space: nowrap; }
         .pd-status::before { content: ''; width: 5pt; height: 5pt; border-radius: 50%; background: #1F8A4C; }
-        .pd-contact { text-align: right; font-size: 8.5pt; line-height: 1.6; color: #464C56; white-space: nowrap; padding-top: 2pt; }
+        .pd-contact { text-align: right; font-size: 8.3pt; line-height: 1.6; color: #464C56; white-space: nowrap; padding-top: 2pt; flex: none; }
         .pd-contact .sep { color: #B8C7DA; margin: 0 4pt; }
         .pd-contact a { color: #14171C; }
         .pd-contact .muted { color: #7A828E; }
 
         .pd-section { margin-top: 8pt; break-inside: auto; }
         .pd-h { font-size: 8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #14171C;
-                padding-bottom: 3.5pt; border-bottom: 0.6pt solid #D7DBE0; margin-bottom: 6pt; break-after: avoid; }
-        .pd-profile { font-size: 9.3pt; line-height: 1.42; color: #333; }
-        .pd-facts { display: flex; gap: 22pt; margin-top: 6pt; }
+                padding-bottom: 4pt; border-bottom: 0.6pt solid #D7DBE0; margin-bottom: 9pt; break-after: avoid; }
+        .pd-profile { font-size: 9.6pt; line-height: 1.5; color: #333; }
+        .pd-facts { display: flex; gap: 22pt; margin-top: 9pt; }
         .pd-facts div { font-size: 8.25pt; color: #7A828E; }
         .pd-facts b { font-family: var(--display); font-size: 12.5pt; font-weight: 700; color: #14171C; letter-spacing: -0.02em; margin-right: 4pt; font-variant-numeric: tabular-nums; }
 
         /* Entry: date column | content, with the timeline rail in the gutter */
-        .pd-entry { display: block; position: relative; padding: 3.5pt 0 4pt; break-inside: auto; }
+        .pd-entry { display: block; position: relative; padding: 4.5pt 0 5pt; break-inside: auto; }
         .pd-entry + .pd-entry { border-top: 0.5pt solid #EEF0F2; }
         .pd-when { position: absolute; left: 0; top: 3.5pt; width: 78pt; font-size: 7.75pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7A828E; padding-top: 1.5pt; font-variant-numeric: tabular-nums; }
         .pd-when small { display: block; margin-top: 1.5pt; font-size: 7.5pt; font-weight: 400; letter-spacing: 0; text-transform: none; }
@@ -230,22 +402,22 @@ const NAV = [
         .pd-title { font-size: 10pt; font-weight: 700; color: #14171C; line-height: 1.3; }
         .pd-sub { font-size: 8.75pt; color: #464C56; margin-top: 0.5pt; break-after: avoid; }
         .pd-sub .loc { color: #7A828E; }
-        .pd-body ul { list-style: none; margin-top: 3pt; }
-        .pd-body li { break-inside: avoid; position: relative; padding-left: 9pt; font-size: 8.7pt; line-height: 1.3; margin-bottom: 0.8pt; color: #333; }
+        .pd-body ul { list-style: none; margin-top: 4pt; }
+        .pd-body li { break-inside: avoid; position: relative; padding-left: 9pt; font-size: 8.7pt; line-height: 1.33; margin-bottom: 1pt; color: #333; }
         .pd-body li::before { content: ''; position: absolute; left: 0; top: 0.68em; width: 5pt; height: 0.9pt; background: #7A828E; }
         .pd-body p { font-size: 8.9pt; line-height: 1.36; margin-top: 2pt; color: #333; }
         .pd-tags { margin-top: 2.5pt; font-size: 7.75pt; font-weight: 600; color: #0B5CAD; }
         .pd-tags span + span::before { content: '  ·  '; color: #B8C7DA; font-weight: 400; }
-        .pd-projs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18pt; row-gap: 3pt; }
+        .pd-projs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20pt; row-gap: 4pt; }
         .pd-proj { break-inside: avoid; display: block; padding: 0; border-top: 0 !important; }
         .pd-proj:last-child:nth-child(odd) { grid-column: 1 / -1; }
         .pd-proj .pd-when { position: static; width: auto; margin-bottom: 1pt; }
         .pd-proj .pd-when small { display: inline; margin-left: 4pt; }
         .pd-proj .pd-body { margin-left: 0; padding-left: 0; border-left: 0; }
         .pd-proj .pd-body::before { display: none; }
-        .pd-proj .pd-title { font-size: 9.4pt; }
-        .pd-proj .pd-body p { font-size: 8.3pt; line-height: 1.3; margin-top: 1pt; }
-        .pd-proj .pd-tags { margin-top: 1.5pt; font-size: 7.4pt; }
+        .pd-proj .pd-title { font-size: 9.8pt; }
+        .pd-proj .pd-body p { font-size: 8.4pt; line-height: 1.33; margin-top: 1.5pt; }
+        .pd-proj .pd-tags { margin-top: 2.5pt; font-size: 7.6pt; }
 
         .pd-two { display: grid; grid-template-columns: 1.25fr 1fr 1fr; column-gap: 18pt; break-inside: avoid; }
         .pd-two .pd-skill { grid-template-columns: 1fr; row-gap: 1pt; }
@@ -271,11 +443,16 @@ const NAV = [
   </head>
   <body>
     <div class="page">
+      <header class="masthead">
+        <div class="id-photo"><img src={portraitUrl} alt={`Portrait of ${person.name}`} width="560" height="560" loading="eager" fetchpriority="high" /></div>
+        <div class="masthead-text">
+          <h1 class="id-name">{person.name}</h1>
+          <p class="id-title">{person.title}</p>
+          <p class="id-status">Available for new engagements · remote, IST</p>
+        </div>
+      </header>
       <aside class="id">
-        <h1 class="id-name">{person.name}</h1>
-        <p class="id-title">{person.title}</p>
-        <p class="id-status">Available for new engagements · remote, IST</p>
-        <p class="id-pitch">Freelance architect who still writes the code. Clients bring me a Salesforce org that has outgrown its build, a product that needs a Heroku backend, or a greenfield platform that needs its first design. I scope it, build it with a small team, and hand it over documented.</p>
+        <p class="id-pitch">{person.pitch} <a href="#contact">Tell me about your project →</a></p>
 
         <nav aria-label="Sections">
           <ul class="id-nav">
@@ -289,6 +466,7 @@ const NAV = [
             <li><a href={`tel:${person.phone.replace(/\s+/g, '')}`}>{person.phone}</a></li>
             <li><a href={person.linkedinUrl} target="_blank" rel="noopener">{person.linkedin}</a></li>
             <li><a href={person.githubUrl} target="_blank" rel="noopener">{person.github}</a></li>
+            <li><a href={person.companyUrl} target="_blank" rel="noopener">cloudalgo.com</a></li>
             <li class="muted">{person.location}</li>
           </ul>
           <a class="download-btn" href="./resume.pdf" download="Sandeep_Kumar_CV.pdf">
@@ -307,6 +485,47 @@ const NAV = [
             <div class="fact"><b>70+</b><span>projects delivered</span></div>
             <div class="fact"><b>{sfCerts.length}</b><span>Salesforce certifications</span></div>
           </div>
+          <div class="industries">
+            <span class="industries-h">Industries I know well</span>
+            {INDUSTRIES.map(i => <div><b>{i.name}</b><p>{i.text}</p></div>)}
+          </div>
+          <div class="clients">
+            <b>Organisations I have built for</b>
+            <ul>{CLIENTS.map(c => <li>{c}</li>)}</ul>
+          </div>
+        </section>
+
+        <section id="services" class="section">
+          <h2 class="section-h">What I do</h2>
+          <div class="services">
+            {SERVICES.map(sv => (
+              <article class="service">
+                <h3>{sv.title}</h3>
+                <p class="problem">{sv.problem}</p>
+                <p class="outcome">{sv.outcome}</p>
+              </article>
+            ))}
+          </div>
+          <div class="recent-h">
+            <b>Recent work at CloudAlgo</b>
+            <a href={person.companyCaseStudiesUrl} target="_blank" rel="noopener">Read the case studies →</a>
+          </div>
+          <ul class="recent">
+            {RECENT_WORK.map(r => (
+              <li>
+                <div>
+                  <div class="who">{r.client}</div>
+                  <p class="what">{r.what}</p>
+                  <div class="stack">{r.stack}</div>
+                </div>
+                <div class="result">{r.result}<small>Outcome</small></div>
+              </li>
+            ))}
+          </ul>
+          <p class="process-h">How an engagement runs</p>
+          <ol class="process">
+            {PROCESS.map(st => <li><b>{st.step}</b><p>{st.text}</p></li>)}
+          </ol>
         </section>
 
         <section id="experience" class="section">
@@ -372,20 +591,39 @@ const NAV = [
           ))}
           <p class="interests">{hobbies}</p>
         </section>
+
+        <section id="contact" class="section">
+          <h2 class="section-h">Work with me</h2>
+          <div class="cta">
+            <h3>Have a Salesforce or Heroku problem that needs an architect?</h3>
+            <p>Send a few lines about what you are building and what is in the way. I reply within one working day with either a time for a call or a pointer to someone better placed. The engagement runs through CloudAlgo; the architecture and code run through me.</p>
+            <div class="cta-actions">
+              <a class="cta-primary" href={contactHref}>Email me about your project</a>
+              <a class="cta-secondary" href={person.companyCaseStudiesUrl} target="_blank" rel="noopener">CloudAlgo case studies</a>
+              <a class="cta-secondary" href={person.linkedinUrl} target="_blank" rel="noopener">Connect on LinkedIn</a>
+            </div>
+            <div class="engage">
+              {ENGAGEMENT.map(e => <div><b>{e.label}</b><p>{e.text}</p></div>)}
+            </div>
+          </div>
+        </section>
       </main>
     </div>
 
     <div class="print-doc" aria-hidden="true">
       <header class="pd-head">
-        <div>
+        <div class="pd-id">
+          <img class="pd-photo" src={portraitUrl} alt="" />
+          <div>
           <div class="pd-name">{person.name}</div>
           <div class="pd-role">{person.title}</div>
-          <div class="pd-status">Available for new engagements · remote, IST (UTC+5:30)</div>
+          <div class="pd-status">Available for new engagements via CloudAlgo · remote, IST (UTC+5:30)</div>
+          </div>
         </div>
         <div class="pd-contact">
           <a href={`mailto:${person.email}`}>{person.email}</a><span class="sep">·</span>{person.phone}<br />
           <a href={person.linkedinUrl}>{person.linkedin}</a><span class="sep">·</span><a href={person.githubUrl}>{person.github}</a><br />
-          <span class="muted">{person.location}</span>
+          <a href={person.companyUrl}>cloudalgo.com</a><span class="sep">·</span><span class="muted">{person.location}</span>
         </div>
       </header>
 
@@ -397,6 +635,10 @@ const NAV = [
           <div><b>70+</b>projects delivered</div>
           <div><b>{sfCerts.length}</b>Salesforce certifications</div>
         </div>
+        <div class="pd-industries">
+          {INDUSTRIES.map(i => <div><b>{i.name}.</b> {i.text}</div>)}
+        </div>
+        <p class="pd-clients"><b>Clients include</b>{CLIENTS.map(c => <span>{c}</span>)}</p>
       </section>
 
       <section class="pd-section">
@@ -416,7 +658,7 @@ const NAV = [
       <section class="pd-section">
         <div class="pd-h">Selected projects</div>
         <div class="pd-projs">
-        {projects.map(p => (
+        {featuredProjects.map(p => (
           <div class="pd-entry pd-proj">
             <div class="pd-when">{clientOf(p.data.client)[0]}{clientOf(p.data.client)[1] && <small>via {clientOf(p.data.client)[1]}</small>}</div>
             <div class="pd-body">

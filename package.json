@@ -7,6 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "build:pdf": "node scripts/generate-pdf.js",
+    "build:og": "node scripts/generate-og.js",
     "build:all": "astro build && node scripts/generate-pdf.js",
     "build:all-themes": "node scripts/generate-all-pdfs.js"
   },

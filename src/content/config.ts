@@ -20,6 +20,8 @@ const projects = defineCollection({
     url: z.string().url().optional(),
     tech: z.array(z.string()),
     order: z.number(),
+    /* false = web only; keeps the two-page PDF to the strongest entries */
+    featured: z.boolean().default(true),
   }),
 })
 

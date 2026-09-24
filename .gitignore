@@ -29,6 +29,7 @@ pnpm-debug.log*
 # playwright / dev screenshots
 .playwright-mcp/
 *.png
+!public/og.png
 
 # editor / IDE
 .vscode/
