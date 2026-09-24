@@ -318,10 +318,67 @@ const NAV = [
       .id-pitch a { color: var(--accent); font-weight: 600; }
       .id-pitch a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-      /* Reveal */
-      .section { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+      /* ── Motion ─────────────────────────────────── */
+      :root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); }
+
+      /* Load sequence: portrait settles, then name, title, status; sidebar follows */
+      @keyframes rise { to { opacity: 1; transform: none; filter: none; } }
+      .masthead .id-photo { opacity: 0; transform: scale(0.92); animation: rise 0.9s var(--ease-out) 0.05s forwards; }
+      .masthead-text > *, .id > * { opacity: 0; transform: translateY(14px); animation: rise 0.7s var(--ease-out) forwards; }
+      .masthead .id-name { filter: blur(6px); animation-duration: 0.85s; animation-delay: 0.18s; }
+      .masthead .id-title { animation-delay: 0.3s; }
+      .masthead .id-status { animation-delay: 0.4s; }
+      .id > :nth-child(1) { animation-delay: 0.38s; }
+      .id > :nth-child(2) { animation-delay: 0.48s; }
+      .id > :nth-child(3) { animation-delay: 0.58s; }
+
+      /* Section reveal, with children of grids arriving one after another */
+      .section { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
       .section.in { opacity: 1; transform: none; }
-      @media (prefers-reduced-motion: reduce) { .section { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+      .section [data-stagger] > * { opacity: 0; transform: translateY(10px); transition: opacity 0.55s var(--ease-out), transform 0.55s var(--ease-out); transition-delay: calc(var(--i, 0) * 55ms); }
+      .section.in [data-stagger] > * { opacity: 1; transform: none; }
+
+      /* Experience timeline draws itself as you read down; passed entries light up */
+      .timeline::after { content: ''; position: absolute; left: 144px; top: 30px; bottom: 30px; width: 1px; background: var(--accent); transform-origin: top; transform: scaleY(var(--tl, 0)); }
+      .timeline .entry.lit::after { border-color: var(--accent); background: var(--accent); }
+      .timeline .entry:first-child::after { border-color: var(--ok); background: var(--ok); }
+
+      /* Spotlight follows the cursor across the dark CTA card */
+      .cta { position: relative; overflow: hidden; }
+      .cta::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.09), transparent 62%); opacity: 0; transition: opacity 0.35s ease; }
+      .cta:hover::before { opacity: 1; }
+      .cta > * { position: relative; }
+
+      /* Scroll rail: replaces the native scrollbar on desktop with a progress line and section ticks */
+      .rail { display: none; }
+      @media (min-width: 961px) and (pointer: fine) {
+        html { scrollbar-width: none; }
+        html::-webkit-scrollbar { display: none; }
+        .rail { display: block; position: fixed; right: 22px; top: 36px; bottom: 36px; width: 14px; z-index: 50; opacity: 0; animation: rise 0.6s var(--ease-out) 0.8s forwards; }
+        .rail-track { position: absolute; top: 0; bottom: 0; left: 6px; width: 1px; background: var(--rule); }
+        .rail-fill { position: absolute; inset: 0; background: var(--accent); transform-origin: top; transform: scaleY(var(--p, 0)); }
+        .rail-thumb { position: absolute; left: -2px; top: 0; width: 5px; height: 34px; border-radius: 3px; background: var(--ink); cursor: grab; z-index: 4; transform: translateY(calc(var(--p, 0) * (var(--h, 0px) - 34px))); transition: background 0.2s; }
+        .rail.dragging .rail-thumb { cursor: grabbing; background: var(--accent); }
+        .rail-hit { position: absolute; top: -8px; bottom: -8px; left: -14px; right: -6px; cursor: pointer; z-index: 1; }
+        .rail-marks { list-style: none; position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+        .rail-marks li { position: absolute; left: 0; right: 0; top: calc(var(--m, 0) * 100%); height: 0; }
+        .rail-marks a { pointer-events: auto; position: absolute; right: 0; top: -12px; height: 24px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; white-space: nowrap; }
+        .rail-marks a::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ink-3); transform: translateX(-0.5px); transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease-out); }
+        .rail-marks a span { font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); opacity: 0; transform: translateX(6px); transition: opacity 0.18s ease-out, transform 0.22s var(--ease-out); }
+        .rail:hover .rail-marks a span, .rail.dragging .rail-marks a span, .rail-marks a.active span { opacity: 1; transform: none; }
+        .rail-marks a.active span { color: var(--ink); }
+        .rail-marks a.active::after, .rail-marks a:hover::after { border-color: var(--accent); background: var(--accent); transform: translateX(-0.5px) scale(1.15); }
+        .rail-marks a.passed::after { border-color: var(--accent); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .masthead .id-photo, .masthead-text > *, .id > *, .rail { animation: none; opacity: 1; transform: none; filter: none; }
+        .section, .section [data-stagger] > * { opacity: 1; transform: none; transition: none; }
+        .timeline::after { transform: none; }
+        .cta::before { display: none; }
+        .rail-marks a span { transition: none; }
+      }
 
       /* ── Responsive ─────────────────────────────── */
       @media (max-width: 960px) {
@@ -362,7 +419,7 @@ const NAV = [
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         html { font-size: 9.25pt; }
         body { background: #fff; color: #333; font-family: var(--body); line-height: 1.34; padding: 0; min-height: 0; }
-        .page, .download-btn { display: none !important; }
+        .page, .rail, .download-btn { display: none !important; }
         .print-doc { display: block; }
 
         .pd-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16pt; padding-bottom: 11pt; border-bottom: 1.2pt solid #14171C; }
@@ -481,11 +538,11 @@ const NAV = [
           <h2 class="section-h">About</h2>
           <p>{person.summary}</p>
           <div class="facts">
-            <div class="fact"><b>{years}+</b><span>years in software</span></div>
-            <div class="fact"><b>70+</b><span>projects delivered</span></div>
-            <div class="fact"><b>{sfCerts.length}</b><span>Salesforce certifications</span></div>
+            <div class="fact"><b data-count={years} data-suffix="+">{years}+</b><span>years in software</span></div>
+            <div class="fact"><b data-count="70" data-suffix="+">70+</b><span>projects delivered</span></div>
+            <div class="fact"><b data-count={sfCerts.length}>{sfCerts.length}</b><span>Salesforce certifications</span></div>
           </div>
-          <div class="industries">
+          <div class="industries" data-stagger>
             <span class="industries-h">Industries I know well</span>
             {INDUSTRIES.map(i => <div><b>{i.name}</b><p>{i.text}</p></div>)}
           </div>
@@ -497,7 +554,7 @@ const NAV = [
 
         <section id="services" class="section">
           <h2 class="section-h">What I do</h2>
-          <div class="services">
+          <div class="services" data-stagger>
             {SERVICES.map(sv => (
               <article class="service">
                 <h3>{sv.title}</h3>
@@ -523,7 +580,7 @@ const NAV = [
             ))}
           </ul>
           <p class="process-h">How an engagement runs</p>
-          <ol class="process">
+          <ol class="process" data-stagger>
             {PROCESS.map(st => <li><b>{st.step}</b><p>{st.text}</p></li>)}
           </ol>
         </section>
@@ -691,9 +748,20 @@ const NAV = [
       </div>
     </div>
 
+    <nav class="rail" aria-label="Scroll position">
+      <div class="rail-hit"></div>
+      <div class="rail-track"><div class="rail-fill"></div><div class="rail-thumb" role="scrollbar" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="-1"></div></div>
+      <ol class="rail-marks">
+        {NAV.map(n => <li data-mark={n.id}><a href={`#${n.id}`} data-nav={n.id}><span>{n.label}</span></a></li>)}
+      </ol>
+    </nav>
+
     <script>
       const sections = [...document.querySelectorAll('.section')]
       const links = [...document.querySelectorAll('[data-nav]')]
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      document.querySelectorAll('[data-stagger]').forEach(g => [...g.children].forEach((c, i) => c.style.setProperty('--i', String(i))))
 
       const reveal = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); reveal.unobserve(e.target) } })
@@ -707,6 +775,95 @@ const NAV = [
         })
       }, { rootMargin: '-30% 0px -60% 0px' })
       sections.forEach(s => spy.observe(s))
+
+      // Stats count up once the About section is in view
+      const counters = [...document.querySelectorAll('[data-count]')]
+      const countUp = el => {
+        const end = Number(el.dataset.count), suffix = el.dataset.suffix || '', t0 = performance.now()
+        const tick = now => {
+          const k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3)
+          el.textContent = Math.round(end * e) + suffix
+          if (k < 1) requestAnimationFrame(tick)
+        }
+        requestAnimationFrame(tick)
+      }
+      if (!reduced && counters.length) {
+        const once = new IntersectionObserver(entries => {
+          entries.forEach(e => { if (e.isIntersecting) { countUp(e.target); once.unobserve(e.target) } })
+        }, { threshold: 0.6 })
+        counters.forEach(c => once.observe(c))
+      }
+
+      // Cursor spotlight on the CTA card
+      const cta = document.querySelector('.cta')
+      cta?.addEventListener('pointermove', e => {
+        const r = cta.getBoundingClientRect()
+        cta.style.setProperty('--mx', `${e.clientX - r.left}px`)
+        cta.style.setProperty('--my', `${e.clientY - r.top}px`)
+      })
+
+      // Timeline draw + scroll rail
+      const timeline = document.querySelector('.timeline')
+      const entries = timeline ? [...timeline.querySelectorAll('.entry')] : []
+      const rail = document.querySelector('.rail')
+      const thumb = rail?.querySelector('.rail-thumb')
+      const marks = rail ? [...rail.querySelectorAll('[data-mark]')] : []
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
+      const maxScroll = () => document.documentElement.scrollHeight - innerHeight
+
+      const layoutRail = () => {
+        if (!rail) return
+        const max = maxScroll()
+        rail.style.setProperty('--h', `${rail.clientHeight}px`)
+        marks.forEach(m => {
+          const sec = document.getElementById(m.dataset.mark)
+          if (sec) m.style.setProperty('--m', String(clamp((sec.getBoundingClientRect().top + scrollY) / max, 0, 1)))
+        })
+      }
+
+      let ticking = false
+      const paint = () => {
+        ticking = false
+        const p = clamp(scrollY / Math.max(1, maxScroll()), 0, 1)
+        if (rail) {
+          rail.style.setProperty('--p', String(p))
+          thumb?.setAttribute('aria-valuenow', String(Math.round(p * 100)))
+          marks.forEach(m => m.firstElementChild.classList.toggle('passed', Number(m.style.getPropertyValue('--m')) <= p))
+        }
+        if (timeline && !reduced) {
+          const r = timeline.getBoundingClientRect(), line = innerHeight * 0.62
+          timeline.style.setProperty('--tl', String(clamp((line - r.top - 30) / (r.height - 60), 0, 1)))
+          entries.forEach(el => el.classList.toggle('lit', el.getBoundingClientRect().top + 33 < line))
+        }
+      }
+      const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(paint) } }
+      addEventListener('scroll', onScroll, { passive: true })
+      addEventListener('resize', () => { layoutRail(); onScroll() })
+      addEventListener('load', () => { layoutRail(); paint() })
+      layoutRail(); paint()
+
+      // Drag the thumb, or click anywhere on the rail, to scroll
+      if (rail && thumb) {
+        const track = rail.querySelector('.rail-track')
+        const scrollToY = clientY => {
+          const r = track.getBoundingClientRect()
+          const p = clamp((clientY - r.top - 17) / (r.height - 34), 0, 1)
+          scrollTo({ top: p * maxScroll(), behavior: 'instant' })
+        }
+        let grab = 0, dragging = false
+        thumb.addEventListener('pointerdown', e => {
+          e.preventDefault()
+          grab = e.clientY - (thumb.getBoundingClientRect().top + thumb.offsetHeight / 2)
+          dragging = true
+          rail.classList.add('dragging')
+          document.body.style.userSelect = 'none'
+        })
+        document.addEventListener('pointermove', e => { if (dragging) scrollToY(e.clientY - grab) })
+        const release = () => { if (!dragging) return; dragging = false; rail.classList.remove('dragging'); document.body.style.userSelect = '' }
+        document.addEventListener('pointerup', release)
+        document.addEventListener('pointercancel', release)
+        rail.querySelector('.rail-hit').addEventListener('click', e => scrollToY(e.clientY))
+      }
     </script>
   </body>
 </html>
