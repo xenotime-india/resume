@@ -16,8 +16,8 @@ const mailBody = encodeURIComponent('Hi Sandeep,\n\nA few lines about what we ar
 const contactHref = `mailto:${person.email}?subject=${mailSubject}&body=${mailBody}`
 const ogImageUrl = new URL(person.ogImage ?? 'og.png', person.siteUrl).href
 const personId = person.siteUrl + '#person'
-const portraitUrl = `${import.meta.env.BASE_URL}/portrait.jpg`.replace('//', '/')
-const portraitAbs = new URL('portrait.jpg', person.siteUrl).href
+const portraitUrl = `${import.meta.env.BASE_URL}/portrait.webp`.replace('//', '/')
+const portraitAbs = new URL('portrait.webp', person.siteUrl).href
 const ldJson = JSON.stringify({
   '@context': 'https://schema.org',
   '@graph': [
